@@ -1,0 +1,124 @@
+
+.light-gray-background{
+    -fx-background-color: #f0f0f0;
+}
+
+.cream-background{
+    -fx-background-color: #fcf7f2;
+}
+
+.white-background{
+    -fx-background-color: white;
+}
+
+.transparent-background{
+    -fx-background-color: rgba(0,0,0,0);
+}
+.radius{
+    -fx-background-radius: 100px;
+}
+
+.chatBox{
+    -fx-background-image: url("Pictures/chat-background.jpg");
+    -fx-background-size: cover;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+.text-area .content {
+    -fx-padding: 10 15 10 15;
+}
+.image-button {
+    -fx-background-size: contain;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-color: transparent;
+    -fx-pref-width: 20px;
+    -fx-pref-height: 20px;
+}
+.image-button: hover{
+    -fx-opacity: 0.7;
+}
+
+#exitButton{
+    -fx-background-image: url("Pictures/signout.png");
+}
+
+#sendButton{
+    -fx-background-image: url("Pictures/sendButton.png");
+}
+
+#attachButton{
+    -fx-background-image: url("Pictures/attachment.png");
+}
+
+#settingsButton{
+    -fx-pref-width: 38px;
+    -fx-pref-height: 44px;
+    -fx-background-image: url("Pictures/Settings.png");
+}
+#profileButton{
+    -fx-pref-width: 38px;
+    -fx-pref-height: 44px;
+    -fx-background-image: url("Pictures/profilePicture.png");
+}
+#GroupChatButton{
+    -fx-pref-width: 38px;
+    -fx-pref-height: 44px;
+    -fx-background-image: url("Pictures/createChat.png");
+}
+#messageButton{
+    -fx-pref-width: 38px;
+    -fx-pref-height: 44px;
+    -fx-background-image: url("Pictures/message.png");
+}
+#SearchButton{
+    -fx-background-image: url("Pictures/search.png");
+}
+
+#scrollPane {
+    -fx-background-color: transparent;
+}
+
+#scrollPane > .viewport {
+    -fx-background-color: transparent;
+}
+
+#messageContainer {
+    -fx-background-color: transparent;
+}
+
+
+.my-message {
+    -fx-background-color: #edece8;
+    -fx-text-fill: black;
+    -fx-padding: 5 5 5 5;
+    -fx-background-radius: 10;
+    -fx-font-size: 12px;
+    -fx-font-family: "JetBrains Mono Medium";
+}
+
+.friend-message {
+    -fx-background-color: black;
+    -fx-text-fill: white;
+    -fx-padding: 5 5 5 5;
+    -fx-background-radius: 10;
+    -fx-font-size: 12px;
+    -fx-font-family: "JetBrains Mono Medium";
+}
+
+.Search{
+    -fx-font-family: "JetBrains Mono Medium";
+        -fx-background-color: transparent;
+        -fx-text-fill: black;
+        -fx-alignment: CENTER-LEFT;
+        -fx-padding: 8 12 8 12;
+        -fx-border-color: black;
+        -fx-border-width: 0.5;
+        -fx-cursor: hand;
+}
+
+.Search:hover{
+    -fx-opacity: 0.7;
+}
+
