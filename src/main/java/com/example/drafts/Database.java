@@ -1,8 +1,5 @@
 package com.example.drafts;
 
-import javafx.scene.image.Image;
-
-import java.io.ByteArrayInputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
