@@ -23,7 +23,7 @@ public class ImageHandler {
             return new Image(new ByteArrayInputStream(imageBytes));
         } else {
             return new Image(
-                    ImageHandler.class.getResourceAsStream("/com/example/drafts/NoProfilePic.png")
+                    ImageHandler.class.getResourceAsStream("/com/example/drafts/icons/user.png")
             );
         }
     }

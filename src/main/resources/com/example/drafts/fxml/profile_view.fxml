@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Circle?>
+
+<VBox fx:id="root" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.drafts.controllers.Profile"
+      spacing="20" VBox.vgrow="ALWAYS">
+
+    <Label text="Profile" styleClass="title">
+        <VBox.margin><Insets top="30" left="40"/></VBox.margin>
+    </Label>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="transparent-background">
+        <VBox spacing="24">
+            <padding><Insets top="10" left="40" right="40" bottom="30"/></padding>
+
+            <!-- Profile Picture -->
+            <VBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Profile Picture" styleClass="title-2"/>
+                <HBox spacing="16" alignment="CENTER_LEFT">
+                    <StackPane>
+                        <ImageView fx:id="profilePicView"
+                                   fitWidth="80" fitHeight="80"
+                                   pickOnBounds="true">
+                            <clip>
+                                <Circle centerX="40" centerY="40" radius="40"/>
+                            </clip>
+                        </ImageView>
+                    </StackPane>
+                    <VBox spacing="8" alignment="CENTER_LEFT">
+                        <Button text="Change Picture" onAction="#choosePicture"/>
+                        <Button text="Remove Picture" onAction="#removePicture" styleClass="danger-button"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Name -->
+            <VBox spacing="10">
+                <Label text="Display Name" styleClass="title-2"/>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <TextField fx:id="nameField" promptText="Your name" HBox.hgrow="ALWAYS"/>
+                    <Button text="Save" onAction="#saveName"/>
+                </HBox>
+            </VBox>
+
+            <!-- Password -->
+            <VBox spacing="10">
+                <Label text="Change Password" styleClass="title-2"/>
+                <VBox spacing="8">
+                    <PasswordField fx:id="currentPassword" promptText="Current password"/>
+                    <PasswordField fx:id="newPassword" promptText="New password"/>
+                    <PasswordField fx:id="confirmPassword" promptText="Confirm new password"/>
+                    <HBox>
+                        <Button text="Change Password" onAction="#savePassword"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+
+        </VBox>
+    </ScrollPane>
+
+</VBox>

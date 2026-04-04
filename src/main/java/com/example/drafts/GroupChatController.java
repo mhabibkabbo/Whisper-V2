@@ -1,5 +1,7 @@
 package com.example.drafts;
 
+import com.example.drafts.utils.Animations;
+import com.example.drafts.utils.Notification;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
@@ -13,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -27,15 +30,18 @@ import static com.example.drafts.Database.getUsernameById;
 
 public class GroupChatController {
 
-    @FXML
-    public TextField groupNameField;
-    @FXML
-    public VBox searchResults;
-    @FXML
-    public TextField searchField;
-    @FXML
-    public HBox selectedMembersBox;
-    private Set<String> selectedMembers = new LinkedHashSet<>();
+    @FXML public TextField groupNameField;
+    @FXML public VBox searchResults;
+    @FXML public TextField searchField;
+    @FXML private HBox selectedMembersBox;
+    @FXML private StackPane root;
+
+    private final Set<String> selectedMembers = new LinkedHashSet<>();
+
+    public void initialize() {
+        Animations.fadeIn(root);
+    }
+
     @FXML
     public void handleSearch(){
         searchResults.getChildren().clear();
@@ -71,7 +77,7 @@ public class GroupChatController {
                 updateSelectedMembersUI();
 
                 if (selectedMembers.contains(username)) {
-                    userButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+                    userButton.setStyle("-fx-background-color: #3d8b5e; -fx-text-fill: white;");
                 } else {
                     userButton.setStyle("");
                 }
@@ -80,7 +86,7 @@ public class GroupChatController {
             });
 
             if (selectedMembers.contains(username)) {
-                userButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+                userButton.setStyle("-fx-background-color: #3d8b5e; -fx-text-fill: white;");
             }
 
             searchResults.getChildren().add(userButton);
@@ -88,6 +94,7 @@ public class GroupChatController {
 
         if (!anyValidUserFound) {
             Label notFound = new Label("No users found!");
+            notFound.getStyleClass().add("title-2");
             searchResults.setAlignment(Pos.CENTER);
             searchResults.getChildren().add(notFound);
         }
@@ -96,40 +103,23 @@ public class GroupChatController {
     }
 
     private void showSearchResults() {
-
         searchResults.setVisible(true);
         searchResults.setManaged(true);
 
-        FadeTransition fade = new FadeTransition(Duration.millis(200), searchResults);
-        fade.setFromValue(0);
-        fade.setToValue(1);
-
-        TranslateTransition slide = new TranslateTransition(Duration.millis(200), searchResults);
-        slide.setFromY(-10);
-        slide.setToY(0);
-
-        ParallelTransition animation = new ParallelTransition(fade, slide);
-        animation.play();
+        Animations.parallel(
+                Animations.fade(searchResults, 200, 0, 1, null),
+                Animations.translateY(searchResults, 200, -20, 0, null)
+        ).play();
     }
 
     private void hideSearchResults() {
-
-        FadeTransition fade = new FadeTransition(Duration.millis(150), searchResults);
-        fade.setFromValue(1);
-        fade.setToValue(0);
-
-        TranslateTransition slide = new TranslateTransition(Duration.millis(150), searchResults);
-        slide.setFromY(0);
-        slide.setToY(-10);
-
-        ParallelTransition animation = new ParallelTransition(fade, slide);
-
-        animation.setOnFinished(e -> {
-            searchResults.setVisible(false);
-            searchResults.setManaged(false);
-        });
-
-        animation.play();
+        Animations.parallel(
+                Animations.fade(searchResults, 200, 1, 0, null),
+                Animations.translateY(searchResults, 200, 0, -20, () -> {
+                    searchResults.setVisible(false);
+                    searchResults.setManaged(false);
+                })
+        ).play();
     }
 
     private void updateSelectedMembersUI() {
@@ -142,12 +132,12 @@ public class GroupChatController {
 
     private HBox createMemberChip(String username) {
         Label nameLabel = new Label(username);
-        nameLabel.setStyle("-fx-font-size: 12px;");
+        nameLabel.getStyleClass().add("chip-label");
 
-        Button removeBtn = new Button("✕");
+        Button removeBtn = new Button("❌");
         removeBtn.setStyle(
                 "-fx-background-color: transparent; -fx-text-fill: gray; " +
-                        "-fx-cursor: hand; -fx-padding: 0 2 0 4;"
+                "-fx-cursor: hand; -fx-padding: 5 8 5 3;"
         );
         removeBtn.setOnAction(e -> {
             selectedMembers.remove(username);
@@ -155,11 +145,8 @@ public class GroupChatController {
             if (!searchField.getText().isEmpty()) handleSearch();
         });
 
-        HBox chip = new HBox(4, nameLabel, removeBtn);
-        chip.setStyle(
-                "-fx-background-color: #e0e0e0; -fx-background-radius: 12; " +
-                        "-fx-padding: 4 8; -fx-alignment: center-left;"
-        );
+        HBox chip = new HBox(3, nameLabel, removeBtn);
+        chip.getStyleClass().add("chip");
         chip.setAlignment(Pos.CENTER_LEFT);
         return chip;
     }
@@ -169,7 +156,7 @@ public class GroupChatController {
     private void handleCreateGroup() {
         String groupName = groupNameField.getText().trim();
         if (groupName.isEmpty() || selectedMembers.isEmpty()) {
-
+            Notification.show("Group Name or Members cannot be empty!", Notification.Type.INFO);
             return;
         }
         String myUsername = Database.getUsernameById(Session.getCurrentUserId());
@@ -177,32 +164,10 @@ public class GroupChatController {
         if (groupId != -1) {
             Controller.currentClient.sendMessage("CREATE_GROUP|" + groupId + "|" + myUsername
                     + "|" + String.join(",", selectedMembers));
+            Notification.show("Group created!", Notification.Type.SUCCESS);
             groupNameField.clear();
             selectedMembers.clear();
             updateSelectedMembersUI();
         }
-    }
-
-
-    // Scene Switching ...
-    @FXML
-    public void switchToLoginScene(javafx.event.ActionEvent actionEvent) throws IOException {
-        Scene scene;
-        Stage stage;
-        Parent root = FXMLLoader.load(getClass().getResource("login.fxml"));
-        stage = (Stage)((Node)actionEvent.getSource()).getScene().getWindow();
-        scene = new Scene(root);
-        stage.setScene(scene);
-        stage.show();
-    }
-    @FXML
-    public void switchToMessageScene(javafx.event.ActionEvent actionEvent) throws IOException{
-        Scene scene;
-        Stage stage;
-        Parent root = FXMLLoader.load(getClass().getResource("messageScene.fxml"));
-        stage = (Stage)((Node)actionEvent.getSource()).getScene().getWindow();
-        scene = new Scene(root);
-        stage.setScene(scene);
-        stage.show();
     }
 }

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.Pane?>
+
+<VBox fx:id="root" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.drafts.controllers.Sidebar"
+      maxWidth="75.0" minWidth="75.0"
+      alignment="CENTER" spacing="10.0"
+      styleClass="gray-background">
+
+    <Region VBox.vgrow="ALWAYS"/>
+
+    <Button fx:id="chat" styleClass="image-button" onAction="#messageScene">
+        <graphic>
+            <fx:include source="../svg/icon_chat.fxml" />
+        </graphic>
+    </Button>
+
+    <Button fx:id="group" styleClass="image-button" onAction="#groupChatScene" >
+        <graphic>
+            <fx:include source="../svg/icon_group.fxml" />
+        </graphic>
+    </Button>
+
+    <Button fx:id="profile" styleClass="image-button" onAction="#profileScene">
+        <graphic>
+            <fx:include source="../svg/icon_profile.fxml" />
+        </graphic>
+    </Button>
+
+    <Button fx:id="settings" styleClass="image-button" onAction="#settingsScene">
+        <graphic>
+            <fx:include source="../svg/icon_settings.fxml" />
+        </graphic>
+    </Button>
+
+    <Region VBox.vgrow="ALWAYS"/>
+    <Button styleClass="image-button" onAction="#logOut" >
+        <graphic>
+            <fx:include source="../svg/icon_logout.fxml" />
+        </graphic>
+    </Button>
+    <Pane minHeight="6" minWidth="6" />
+</VBox>

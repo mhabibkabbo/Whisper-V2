@@ -1,3 +1,5 @@
+package com.example.drafts.Server.src;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -31,7 +33,6 @@ public class ClientHandler implements Runnable {
         String message;
         try {
             while ((message = reader.readLine()) != null) {
-
                 if (message.startsWith("GROUP|")) {
 
                     String groupMessage = message.substring(6);
@@ -51,6 +52,34 @@ public class ClientHandler implements Runnable {
                             receiver,
                             privateMsg
                     );
+
+                } else if (message.startsWith("PM_FILE|")) {
+                    String[] parts = message.split("\\|", 5);
+                    Server.sendRawToUser(
+                            parts[1],
+                            "PM_FILE|" + clientUsername + "|" + parts[2] + "|" + parts[3] + "|" + parts[4]
+                    );
+
+                } else if (message.startsWith("GROUP_FILE|")) {
+                    String[] parts = message.split("\\|", 5);
+                    Server.broadcastMessage(
+                            "GROUP_FILE|" + parts[1] + "|" + clientUsername + "|" + parts[2] + "|" + parts[3] + "|" + parts[4],
+                            this
+                    );
+
+                } else if (message.startsWith("CALL_REQUEST|")) {
+                    String[] p = message.split("\\|");
+                    Server.sendRawToUser(p[1], "CALL_REQUEST|" + clientUsername + "|" + p[2]);
+
+                } else if (message.startsWith("CALL_ACCEPT|")) {
+                    String[] p = message.split("\\|");
+                    Server.sendRawToUser(p[1], "CALL_ACCEPT|" + clientUsername + "|" + p[2]);
+
+                } else if (message.startsWith("CALL_REJECT|")) {
+                    Server.sendRawToUser(message.split("\\|")[1], "CALL_REJECT|" + clientUsername);
+
+                } else if (message.startsWith("CALL_END|")) {
+                    Server.sendRawToUser(message.split("\\|")[1], "CALL_END|" + clientUsername);
                 }
             }
         } catch (IOException e) {

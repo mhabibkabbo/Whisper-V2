@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextArea?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.shape.Circle?>
+<HBox fx:id="root" spacing="10" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.drafts.Controller">
+
+    <StackPane maxWidth="400.0" fx:id="leftPanel" HBox.hgrow="NEVER">
+        <VBox>
+            <Pane minHeight="5" />
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Pane minWidth="5" />
+                <Group>
+                    <fx:include source="../svg/icon_search.fxml" />
+                </Group>
+                <TextField fx:id="searchField" onAction="#handleSearch" HBox.hgrow="ALWAYS"
+                           promptText="Search" maxHeight="50" minHeight="50"/>
+            </HBox>
+            <ScrollPane fx:id="conversationListScroll" VBox.vgrow="ALWAYS" fitToWidth="true">
+                <VBox.margin> <Insets top="10" left="10" right="10" bottom="10" /> </VBox.margin>
+                <VBox fx:id="conversationListVBox" spacing="5"/>
+            </ScrollPane>
+        </VBox>
+
+        <VBox fx:id="searchContainer" visible="false" managed="false">
+            <StackPane.margin><Insets top="80" left="20" right="10" bottom="10" /></StackPane.margin>
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                <VBox fx:id="searchResults" spacing="5"/>
+            </ScrollPane>
+        </VBox>
+    </StackPane>
+
+    <StackPane VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS">
+        <HBox.margin><Insets left="5" top="5" right="5" bottom="5" /></HBox.margin>
+        <VBox fx:id="chatBackground"
+              VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS">
+            <clip>
+                <Rectangle arcWidth="20" arcHeight="20"
+                           width="${chatBackground.width}"
+                           height="${chatBackground.height}"/>
+            </clip>
+            <Pane minHeight="10" />
+            <HBox alignment="CENTER_LEFT">
+                <Pane minWidth="10"/>
+                <ImageView fx:id="currentChatUserPicture" fitHeight="40.0" fitWidth="40.0"
+                           pickOnBounds="true" preserveRatio="true" styleClass="radius">
+                    <Image url="@../icons/user.png" smooth="true" />
+                </ImageView>
+                <Pane minWidth="15"/>
+                <Label fx:id="profileName" text="RECEIVER_NAME" styleClass="profile-name"
+                       HBox.hgrow="ALWAYS"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button styleClass="chat-buttons" onAction="#handleInitiateCall">
+                    <graphic>
+                        <fx:include source="../svg/icon_call.fxml" />
+                    </graphic>
+                </Button>
+                <Pane minWidth="10"/>
+            </HBox>
+
+            <HBox fx:id="incomingCallBanner"
+                  visible="false" managed="false"
+                  spacing="10" alignment="CENTER_LEFT"
+                  styleClass="incoming-call-banner">
+                <clip>
+                    <Rectangle arcWidth="20" arcHeight="20"
+                               width="${incomingCallBanner.width}"
+                               height="${incomingCallBanner.height}"/>
+                </clip>
+                <VBox.margin><Insets top="10" left="20" right="20" bottom="10"/></VBox.margin>
+                <ImageView fx:id="callerPicBanner" fitWidth="42" fitHeight="42">
+                    <clip><Circle centerX="21" centerY="21" radius="21"/></clip>
+                </ImageView>
+
+                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                    <Label text="Incoming call" styleClass="call-meta-label"/>
+                    <Label fx:id="callerNameBanner" styleClass="call-name-label"/>
+                </VBox>
+
+                <Button text="Accept"
+                        onAction="#handleAcceptCall"
+                        styleClass="call-accept-btn"/>
+
+                <Button text="Decline"
+                        onAction="#handleDeclineCall"
+                        styleClass="call-decline-btn"/>
+            </HBox>
+
+            <ScrollPane fx:id="scrollPane" fitToWidth="true"
+                        VBox.vgrow="ALWAYS">
+                <VBox.margin><Insets left="10" top="10" bottom="10" /></VBox.margin>
+                <VBox fx:id="messageContainer"/>
+            </ScrollPane>
+
+            <VBox fx:id="attachmentPreviewBar" visible="false" managed="false"
+                  spacing="10" alignment="CENTER_LEFT" maxWidth="350"
+                  styleClass="attachments">
+                <VBox.margin><Insets bottom="10" left="10" right="10"/></VBox.margin>
+                <ImageView fx:id="attachmentPreviewThumb"
+                           fitWidth="350" fitHeight="350" preserveRatio="true"
+                           visible="false" managed="false"/>
+                <HBox spacing="10">
+                    <Label fx:id="attachmentPreviewLabel" minHeight="40" maxWidth="280" style="-fx-font-size: 15; -fx-text-overrun: ellipsis;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="✕" onAction="#clearAttachment" maxWidth="40" minHeight="40" minWidth="40" maxHeight="40"/>
+                </HBox>
+            </VBox>
+
+            <HBox alignment="BOTTOM_CENTER" spacing="10">
+                <VBox.margin><Insets bottom="10" left="10" right="10"/></VBox.margin>
+
+                <Button styleClass="chat-buttons" onAction="#handleAttach">
+                    <graphic>
+                        <fx:include source="../svg/icon_attachments.fxml" />
+                    </graphic>
+                </Button>
+
+                <TextArea fx:id="messageField" promptText="Message"
+                          wrapText="true" prefRowCount="1"
+                          HBox.hgrow="ALWAYS" styleClass="chat-text-area">
+                </TextArea>
+
+                <Button styleClass="chat-buttons"
+                        onAction="#handleSend">
+                    <graphic>
+                        <fx:include source="../svg/icon_send.fxml" />
+                    </graphic>
+                </Button>
+            </HBox>
+        </VBox>
+
+        <VBox fx:id="callScreen"
+              visible="false" managed="false"
+              alignment="CENTER" spacing="16"
+              styleClass="call-screen-overlay"
+              StackPane.alignment="CENTER">
+
+            <ImageView fx:id="callScreenPic" fitWidth="80" fitHeight="80">
+                <clip><Circle centerX="40" centerY="40" radius="40"/></clip>
+            </ImageView>
+
+            <Label fx:id="callScreenName" styleClass="call-screen-name"/>
+            <Label fx:id="callDurationLabel" styleClass="call-duration-label"/>
+
+            <HBox spacing="24" alignment="CENTER">
+                <Button fx:id="muteBtn"
+                        text="Mute"
+                        onAction="#handleMuteToggle"
+                        styleClass="call-action-btn, mute-inactive"/>
+
+                <Button text="End"
+                        onAction="#handleEndCall"
+                        styleClass="call-action-btn, call-end-btn"/>
+            </HBox>
+        </VBox>
+    </StackPane>
+
+</HBox>

@@ -1,0 +1,178 @@
+.root {
+    -fx-font-family: "Outfit Regular";
+    -fx-primary-background: #F9F8F6;
+    -fx-primary-color: #25343F;
+    -fx-primary-color-75: #25343FBF;
+    -fx-primary-hover: #435663;
+    -fx-primary-hover-25: #43566319;
+    -fx-primary-hover-50: #43566332;
+    -fx-primary-hover-75: #435663BF;
+    -fx-primary-color-light: #F9F8F6;
+    -fx-secondary-color: #EDEDED;
+    -fx-tertiary-color: #40A2E3;
+}
+
+.label {
+    -fx-text-fill: -fx-primary-color;
+}
+
+.text-field {
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-font-size: 16;
+    -fx-font-family: "Outfit SemiBold";
+    -fx-padding: 10;
+    -fx-text-fill: -fx-primary-color;
+    -fx-prompt-text-fill: -fx-primary-color-75;
+    -fx-background-color: -fx-secondary-color;
+    -fx-border-color: -fx-secondary-color;
+    -fx-border-width: 2;
+}
+
+.text-field:focused {
+    -fx-border-radius: 10;
+    -fx-border-color: -fx-primary-color;
+    -fx-border-width: 2;
+}
+
+.text-content-helper {
+    -fx-font-size: 16;
+    -fx-font-family: "Outfit SemiBold";
+}
+
+.text-area {
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-font-size: 16;
+    -fx-padding: 8;
+    -fx-font-family: "Outfit SemiBold";
+    -fx-text-fill: -fx-primary-color;
+    -fx-prompt-text-fill: -fx-primary-color-75;
+    -fx-background-color: -fx-secondary-color;
+    -fx-border-color: -fx-secondary-color;
+    -fx-border-width: 2;
+}
+
+.text-area .content {
+    -fx-background-color: transparent;
+}
+
+.text-area:focused {
+    -fx-border-radius: 10;
+    -fx-border-color: -fx-primary-color;
+    -fx-border-width: 2;
+}
+
+.button {
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-font-size: 16;
+    -fx-font-family: "Outfit SemiBold";
+    -fx-padding: 10;
+    -fx-text-fill: -fx-primary-color-light;
+    -fx-background-color: -fx-primary-color;
+    -fx-border-color: transparent;
+}
+
+.button:hover {
+    -fx-background-color: -fx-primary-hover;
+}
+
+.button:pressed {
+    -fx-background-color: -fx-primary-color;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+/* Ensure the viewport is also transparent */
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Style the ScrollBar track (the background of the bar) */
+.scroll-bar:vertical, .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+/* Style the 'Thumb' (the draggable handle) */
+.scroll-bar:vertical .thumb, .scroll-bar:horizontal .thumb {
+    -fx-background-color: #bdc3c7;
+    -fx-background-radius: 5em;
+}
+
+/* Change thumb color on hover for better UX */
+.scroll-bar:vertical .thumb:hover, .scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: #95a5a6;
+}
+
+/* Hide the increment/decrement arrows (buttons at ends) */
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+.icon-color {
+    -fx-fill: -fx-primary-color-75;
+}
+
+.hyperlink {
+    -fx-text-fill: dodgerblue;
+}
+
+.hyperlink:hover {
+    -fx-underline: false;
+}
+
+.hyperlink:visited {
+    -fx-text-fill: dodgerblue;
+    -fx-underline: false;
+}
+
+.check-box {
+    -fx-text-fill: #333333;
+    -fx-font-size: 14px;
+}
+
+.check-box > .box {
+    -fx-background-color: -fx-secondary-color;
+    -fx-border-color: -fx-primary-hover-25;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 3px;
+}
+
+.check-box:selected > .box {
+    -fx-background-color: -fx-primary-color;
+    -fx-border-color: -fx-primary-color;
+}
+
+.check-box:selected > .box > .mark {
+    -fx-background-color: white;
+}
+
+.background {
+    -fx-background-color: -fx-primary-background;
+}
+
+.logo-fill {
+    -fx-fill: -fx-primary-color;
+}
+
+.logo-outline {
+    -fx-stroke: -fx-primary-color;
+    -fx-stroke-width: 5px;
+    -fx-fill: transparent;
+}
+
+.gray-background {
+    -fx-background-color: -fx-secondary-color;
+}

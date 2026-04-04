@@ -63,7 +63,7 @@ public class LoginController {
     @FXML
     public void switchToMessageScene() throws IOException {
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("messageScene.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("message_view.fxml"));
         Parent root = loader.load();
         Stage stage = (Stage) loginButton.getScene().getWindow();
         stage.setScene(new Scene(root));

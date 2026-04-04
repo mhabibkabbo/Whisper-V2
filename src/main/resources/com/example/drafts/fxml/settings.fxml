@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Button?>
+
+<VBox fx:id="root" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.drafts.controllers.Settings"
+      spacing="20" VBox.vgrow="ALWAYS">
+
+    <Label text="Settings" styleClass="title">
+        <VBox.margin> <Insets top="30" left="40" right="30" /></VBox.margin>
+    </Label>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="transparent-background">
+        <VBox spacing="10">
+            <padding><Insets top="20" left="40" right="40"/></padding>
+
+            <!-- Notifications -->
+            <Label text="Notifications" styleClass="title-2" />
+            <VBox spacing="10">
+                <VBox.margin><Insets left="20" right="15" bottom="20"/></VBox.margin>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Enable Menu Notifications" styleClass="title-3" minWidth="250"/>
+                    <CheckBox fx:id="notificationsEnabled"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Enable Chat Notifications" styleClass="title-3" minWidth="250"/>
+                    <CheckBox fx:id="chatNotificationsEnabled"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Chat Notification Sound" styleClass="title-3" minWidth="250"/>
+                    <CheckBox fx:id="notificationSound"/>
+                </HBox>
+            </VBox>
+
+            <!-- Messages -->
+            <Label text="Chat Messages" styleClass="title-2" />
+            <VBox spacing="10">
+                <VBox.margin><Insets left="20" right="15" bottom="20"/></VBox.margin>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Enter to Send" styleClass="title-3" minWidth="250"/>
+                    <CheckBox fx:id="enterToSend"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Font Size" styleClass="title-3" minWidth="250"/>
+                    <TextField fx:id="fontSize" promptText="Size in px" HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Spacing between Messages" styleClass="title-3" minWidth="250"/>
+                    <TextField fx:id="messageSpacing" promptText="Spacing in px" HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Auto-scroll to New Messages" styleClass="title-3" minWidth="250"/>
+                    <CheckBox fx:id="autoScroll"/>
+                </HBox>
+            </VBox>
+
+            <Label text="Chat Background" styleClass="title-2"/>
+            <ScrollPane vbarPolicy="NEVER">
+                <VBox.margin><Insets left="20" right="15" bottom="20"/></VBox.margin>
+                <HBox fx:id="backgroundPicker" spacing="10">
+                    <padding><Insets top="5" bottom="10"/></padding>
+                </HBox>
+            </ScrollPane>
+
+            <!-- Save button -->
+            <HBox alignment="CENTER_RIGHT">
+                <VBox.margin><Insets right="15" left="20" bottom="20"/></VBox.margin>
+                <Button text="Save Changes" onAction="#saveSettings"
+                        defaultButton="true"/>
+            </HBox>
+
+        </VBox>
+    </ScrollPane>
+
+</VBox>

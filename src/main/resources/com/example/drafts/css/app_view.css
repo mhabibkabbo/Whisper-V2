@@ -1,0 +1,214 @@
+.image-button {
+    -fx-background-size: contain;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-color: transparent;
+    -fx-min-width: 50px;
+    -fx-max-width: 50px;
+    -fx-min-height: 50px;
+    -fx-max-height: 50px;
+}
+
+.image-button:hover, .image-button:locked {
+    -fx-background-color: -fx-primary-hover-50;
+}
+
+.chat-buttons {
+    -fx-background-color: -fx-primary-hover-25;
+    -fx-min-width: 50px;
+    -fx-max-width: 50px;
+    -fx-min-height: 50px;
+    -fx-max-height: 50px;
+}
+
+.chat-buttons:hover {
+    -fx-background-color: -fx-primary-hover-50;
+}
+
+.chat-text-area-need-change {
+    -fx-background-color: -fx-primary-hover-25;
+    -fx-border-color: -fx-primary-hover-25;
+}
+
+.chat-bg {
+    -fx-background-image: url("../Pictures/chat-background.jpg");
+    -fx-background-size: cover;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+.chat-bg-none-need-change {
+    -fx-background-color: -fx-secondary-color;
+}
+
+.radius {
+    -fx-background-radius: 100px;
+}
+
+.debug {
+    -fx-background-color: -fx-primary-hover-50;
+}
+
+.transparent {
+    -fx-background-color: transparent;
+}
+
+.profile-name {
+    -fx-font-size: 18px;
+    -fx-font-family: "Outfit SemiBold";
+}
+
+.my-message {
+    -fx-background-color: -fx-primary-color;
+    -fx-text-fill: white;
+    -fx-padding: 10;
+    -fx-background-radius: 8;
+    -fx-font-size: 15px;
+}
+
+.friend-message {
+    -fx-background-color: -fx-secondary-color;
+    -fx-text-fill: -fx-primary-color;
+    -fx-padding: 10;
+    -fx-background-radius: 8;
+    -fx-font-size: 15px;
+}
+
+.title {
+    -fx-font-family: "Outfit SemiBold";
+    -fx-font-size: 30px;
+}
+
+.title-2 {
+    -fx-font-family: "Outfit SemiBold";
+    -fx-font-size: 20px;
+}
+
+.title-3 {
+    -fx-font-family: "Outfit SemiBold";
+    -fx-font-size: 15px;
+}
+
+.chip-label {
+    -fx-font-family: "Outfit SemiBold";
+    -fx-font-size: 15px;
+    -fx-padding: 8 3 8 10;
+    -fx-background-radius: 8;
+}
+
+.chip {
+    -fx-background-color: -fx-secondary-color;
+    -fx-background-radius: 8;
+    -fx-alignment: center-left;
+}
+
+.bg-tile {
+  -fx-border-color: transparent;
+  -fx-border-width: 2;
+  -fx-border-radius: 8;
+  -fx-cursor: hand;
+}
+
+.bg-tile-selected {
+  -fx-border-color: -fx-primary-color;
+}
+
+.bg-tile-empty {
+  -fx-background-color: -fx-secondary-color;
+  -fx-border-radius: 8;
+}
+
+.attachments {
+    -fx-padding: 10;
+    -fx-background-color: -fx-secondary-color;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.incoming-call-banner {
+  -fx-background-color: -fx-secondary-color;
+  -fx-border-color: -fx-secondary-color;
+  -fx-border-width: 1;
+  -fx-padding: 15;
+}
+
+.call-meta-label {
+    -fx-font-size: 15px;
+    -fx-text-fill: -fx-primary-color;
+}
+
+.call-name-label { -fx-font-size: 15px; -fx-font-weight: bold; }
+
+.call-accept-btn {
+    -fx-background-color: #2ecc71;
+    -fx-text-fill: white;
+    -fx-background-radius: 20;
+    -fx-padding: 8 15 8 15;
+}
+
+.call-decline-btn {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-background-radius: 20;
+    -fx-padding: 6 16 6 16;
+}
+
+.call-screen-overlay {
+  -fx-background-color: -fx-primary-hover;
+  -fx-background-radius: 10;
+}
+
+.call-screen-name {
+    -fx-font-size: 28px;
+    -fx-font-family: "Outfit SemiBold";
+    -fx-text-fill: white;
+}
+
+.call-duration-label {
+    -fx-font-size: 15px;
+    -fx-text-fill: white;
+}
+
+.call-action-btn {
+    -fx-background-radius: 30;
+    -fx-padding: 10 28 10 28;
+    -fx-font-size: 12px;
+}
+
+.mute-inactive {
+    -fx-background-color: -fx-secondary-color;
+    -fx-font-family: "Outfit SemiBold";
+    -fx-text-fill: -fx-primary-color;
+}
+
+.mute-inactive:hover {
+    -fx-background-color: -fx-primary-color;
+    -fx-font-family: "Outfit SemiBold";
+    -fx-text-fill: white;
+}
+
+.mute-active {
+    -fx-background-color: -fx-primary-color;
+    -fx-font-family: "Outfit SemiBold";
+    -fx-font-size: 12px;
+    -fx-text-fill: white;
+}
+
+.mute-active:hover {
+    -fx-background-color: -fx-primary-color;
+    -fx-font-family: "Outfit SemiBold";
+    -fx-text-fill: white;
+}
+
+.call-end-btn {
+    -fx-background-color: #e74c3c;
+    -fx-font-family: "Outfit SemiBold";
+    -fx-font-size: 12px;
+    -fx-text-fill: white;
+}
+
+.call-end-btn:hover {
+    -fx-background-color: -fx-primary-color;
+    -fx-font-family: "Outfit SemiBold";
+    -fx-text-fill: white;
+}

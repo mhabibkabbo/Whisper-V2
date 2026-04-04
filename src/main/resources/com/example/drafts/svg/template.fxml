@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.shape.SVGPath?>
+
+<Group xmlns="http://javafx.com/javafx"
+       scaleX="1.5" scaleY="1.5">
+    <SVGPath content="" styleClass="icon-color" />
+</Group>

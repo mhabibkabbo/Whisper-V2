@@ -1,0 +1,19 @@
+.app-title {
+    -fx-font-size: 50px;
+    -fx-opacity: 0.95;
+    -fx-font-family: "Outfit SemiBold";
+}
+
+.form-heading {
+    -fx-font-size: 40px;
+    -fx-opacity: 0.95;
+    -fx-font-family: "Outfit SemiBold";
+}
+
+.link-text {
+    -fx-font-size: 14px;
+}
+
+.pfp-circle {
+    -fx-fill: -fx-secondary-color;
+}

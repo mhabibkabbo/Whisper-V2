@@ -1,3 +1,5 @@
+package com.example.drafts.Server.src;
+
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,6 +29,11 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void sendRawToUser(String username, String message) {
+        ClientHandler handler = onlineUsers.get(username);
+        if (handler != null) handler.sendMessage(message);
     }
 
     // Broadcast message to all clients

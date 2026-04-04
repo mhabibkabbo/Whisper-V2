@@ -19,6 +19,22 @@ public class Database {
         return conn;
     }
 
+    public static void migrateAttachmentColumns() {
+        String[] alters = {
+                "ALTER TABLE messages ADD COLUMN attachment_data BLOB",
+                "ALTER TABLE messages ADD COLUMN attachment_name TEXT",
+                "ALTER TABLE messages ADD COLUMN attachment_type TEXT",
+                "ALTER TABLE group_messages ADD COLUMN attachment_data BLOB",
+                "ALTER TABLE group_messages ADD COLUMN attachment_name TEXT",
+                "ALTER TABLE group_messages ADD COLUMN attachment_type TEXT"
+        };
+        try (Connection conn = connect(); Statement stmt = conn.createStatement()) {
+            for (String sql : alters) {
+                try { stmt.execute(sql); } catch (SQLException ignored) {}
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+
     public static void createUserTable() {
         String sql = """
         CREATE TABLE IF NOT EXISTS users (
@@ -36,6 +52,50 @@ public class Database {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    public static boolean updateName(int userId, String newName) {
+        String sql = "UPDATE users SET name = ? WHERE id = ?";
+        try (Connection conn = connect();
+             PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setString(1, newName);
+            p.setInt(2, userId);
+            p.executeUpdate();
+            return true;
+        } catch (SQLException e) { e.printStackTrace(); return false; }
+    }
+
+    public static boolean updatePassword(int userId, String currentRaw, String newRaw) {
+        // verify current password first
+        String sql = "SELECT password FROM users WHERE id = ?";
+        try (Connection conn = connect();
+             PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setInt(1, userId);
+            ResultSet rs = p.executeQuery();
+            if (!rs.next()) return false;
+            if (!rs.getString("password").equals(PassHasher.hashPassword(currentRaw))) return false;
+        } catch (SQLException e) { e.printStackTrace(); return false; }
+
+        // update
+        String update = "UPDATE users SET password = ? WHERE id = ?";
+        try (Connection conn = connect();
+             PreparedStatement p = conn.prepareStatement(update)) {
+            p.setString(1, PassHasher.hashPassword(newRaw));
+            p.setInt(2, userId);
+            p.executeUpdate();
+            return true;
+        } catch (SQLException e) { e.printStackTrace(); return false; }
+    }
+
+    public static boolean updateProfilePicture(int userId, byte[] imageBytes) {
+        String sql = "UPDATE users SET profile_pic = ? WHERE id = ?";
+        try (Connection conn = connect();
+             PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setBytes(1, imageBytes);
+            p.setInt(2, userId);
+            p.executeUpdate();
+            return true;
+        } catch (SQLException e) { e.printStackTrace(); return false; }
     }
 
     public static String getNameById(int id) {
@@ -239,43 +299,95 @@ public class Database {
     }
 
     // Save a message
+//    public static void saveMessage(int senderId, int receiverId, String message) {
+//        String sql = "INSERT INTO messages(sender_id, receiver_id, message) VALUES(?, ?, ?)";
+//        try (Connection conn = connect();
+//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+//            pstmt.setInt(1, senderId);
+//            pstmt.setInt(2, receiverId);
+//            pstmt.setString(3, message);
+//            pstmt.executeUpdate();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    // Replaces the existing saveMessage — keeps old 3-arg signature as a delegate
     public static void saveMessage(int senderId, int receiverId, String message) {
-        String sql = "INSERT INTO messages(sender_id, receiver_id, message) VALUES(?, ?, ?)";
-        try (Connection conn = connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, senderId);
-            pstmt.setInt(2, receiverId);
-            pstmt.setString(3, message);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        saveMessage(senderId, receiverId, message, null, null, null);
+    }
+
+    public static void saveMessage(int senderId, int receiverId, String message,
+                                   byte[] attachmentData, String attachmentName, String attachmentType) {
+        String sql = """
+    INSERT INTO messages(sender_id, receiver_id, message,
+                         attachment_data, attachment_name, attachment_type)
+    VALUES(?, ?, ?, ?, ?, ?)
+  """;
+        try (Connection conn = connect(); PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setInt(1, senderId);
+            p.setInt(2, receiverId);
+            p.setString(3, message != null ? message : "");
+            if (attachmentData != null) p.setBytes(4, attachmentData); else p.setNull(4, Types.BLOB);
+            p.setString(5, attachmentName);
+            p.setString(6, attachmentType);
+            p.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
     // Load chat history between two users
+//    public static List<Message> getMessagesBetween(int userId1, int userId2) {
+//        List<Message> messages = new ArrayList<>();
+//        String sql = """
+//        SELECT sender_id, message, timestamp FROM messages
+//        WHERE (sender_id = ? AND receiver_id = ?)
+//           OR (sender_id = ? AND receiver_id = ?)
+//        ORDER BY timestamp ASC
+//    """;
+//        try (Connection conn = connect();
+//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+//            pstmt.setInt(1, userId1); pstmt.setInt(2, userId2);
+//            pstmt.setInt(3, userId2); pstmt.setInt(4, userId1);
+//            ResultSet rs = pstmt.executeQuery();
+//            while (rs.next()) {
+//                messages.add(new Message(
+//                        rs.getInt("sender_id"),
+//                        rs.getString("message"),
+//                        rs.getString("timestamp")
+//                ));
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return messages;
+//    }
+
+    // Updated getMessagesBetween — include attachment columns
     public static List<Message> getMessagesBetween(int userId1, int userId2) {
         List<Message> messages = new ArrayList<>();
         String sql = """
-        SELECT sender_id, message, timestamp FROM messages
-        WHERE (sender_id = ? AND receiver_id = ?)
-           OR (sender_id = ? AND receiver_id = ?)
-        ORDER BY timestamp ASC
-    """;
-        try (Connection conn = connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, userId1); pstmt.setInt(2, userId2);
-            pstmt.setInt(3, userId2); pstmt.setInt(4, userId1);
-            ResultSet rs = pstmt.executeQuery();
+    SELECT sender_id, message, timestamp,
+           attachment_data, attachment_name, attachment_type
+    FROM messages
+    WHERE (sender_id = ? AND receiver_id = ?)
+       OR (sender_id = ? AND receiver_id = ?)
+    ORDER BY timestamp ASC
+  """;
+        try (Connection conn = connect(); PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setInt(1, userId1); p.setInt(2, userId2);
+            p.setInt(3, userId2); p.setInt(4, userId1);
+            ResultSet rs = p.executeQuery();
             while (rs.next()) {
                 messages.add(new Message(
                         rs.getInt("sender_id"),
                         rs.getString("message"),
-                        rs.getString("timestamp")
+                        rs.getString("timestamp"),
+                        rs.getBytes("attachment_data"),
+                        rs.getString("attachment_name"),
+                        rs.getString("attachment_type")
                 ));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        } catch (SQLException e) { e.printStackTrace(); }
         return messages;
     }
 
@@ -403,26 +515,73 @@ public class Database {
         return -1;
     }
 
+//    public static void saveGroupMessage(int groupId, String sender, String message) {
+//        String sql = "INSERT INTO group_messages(group_id, sender, message) VALUES(?, ?, ?)";
+//        try (Connection conn = connect();
+//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+//            pstmt.setInt(1, groupId);
+//            pstmt.setString(2, sender);
+//            pstmt.setString(3, message);
+//            pstmt.executeUpdate();
+//        } catch (SQLException e) { e.printStackTrace(); }
+//    }
+
     public static void saveGroupMessage(int groupId, String sender, String message) {
-        String sql = "INSERT INTO group_messages(group_id, sender, message) VALUES(?, ?, ?)";
-        try (Connection conn = connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, groupId);
-            pstmt.setString(2, sender);
-            pstmt.setString(3, message);
-            pstmt.executeUpdate();
+        saveGroupMessage(groupId, sender, message, null, null, null);
+    }
+
+    public static void saveGroupMessage(int groupId, String sender, String message,
+                                        byte[] attachmentData, String attachmentName, String attachmentType) {
+        String sql = """
+    INSERT INTO group_messages(group_id, sender, message,
+                               attachment_data, attachment_name, attachment_type)
+    VALUES(?, ?, ?, ?, ?, ?)
+  """;
+        try (Connection conn = connect(); PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setInt(1, groupId);
+            p.setString(2, sender);
+            p.setString(3, message != null ? message : "");
+            if (attachmentData != null) p.setBytes(4, attachmentData); else p.setNull(4, Types.BLOB);
+            p.setString(5, attachmentName);
+            p.setString(6, attachmentType);
+            p.executeUpdate();
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
+//    public static List<GroupMessage> getGroupMessages(int groupId) {
+//        List<GroupMessage> list = new ArrayList<>();
+//        String sql = "SELECT sender, message, timestamp FROM group_messages WHERE group_id = ? ORDER BY timestamp ASC";
+//        try (Connection conn = connect();
+//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+//            pstmt.setInt(1, groupId);
+//            ResultSet rs = pstmt.executeQuery();
+//            while (rs.next()) {
+//                list.add(new GroupMessage(rs.getString("sender"), rs.getString("message"), rs.getString("timestamp")));
+//            }
+//        } catch (SQLException e) { e.printStackTrace(); }
+//        return list;
+//    }
+
+    // Same for getGroupMessages
     public static List<GroupMessage> getGroupMessages(int groupId) {
         List<GroupMessage> list = new ArrayList<>();
-        String sql = "SELECT sender, message, timestamp FROM group_messages WHERE group_id = ? ORDER BY timestamp ASC";
-        try (Connection conn = connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, groupId);
-            ResultSet rs = pstmt.executeQuery();
+        String sql = """
+    SELECT sender, message, timestamp,
+           attachment_data, attachment_name, attachment_type
+    FROM group_messages WHERE group_id = ? ORDER BY timestamp ASC
+  """;
+        try (Connection conn = connect(); PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setInt(1, groupId);
+            ResultSet rs = p.executeQuery();
             while (rs.next()) {
-                list.add(new GroupMessage(rs.getString("sender"), rs.getString("message"), rs.getString("timestamp")));
+                list.add(new GroupMessage(
+                        rs.getString("sender"),
+                        rs.getString("message"),
+                        rs.getString("timestamp"),
+                        rs.getBytes("attachment_data"),
+                        rs.getString("attachment_name"),
+                        rs.getString("attachment_type")
+                ));
             }
         } catch (SQLException e) { e.printStackTrace(); }
         return list;
