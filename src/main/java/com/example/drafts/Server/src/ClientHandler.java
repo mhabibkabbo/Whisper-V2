@@ -67,6 +67,13 @@ public class ClientHandler implements Runnable {
                             this
                     );
 
+                } else if (message.startsWith("GROUP_MSG|")) {
+                    String[] parts = message.split("\\|", 3);
+                    Server.broadcastMessage(
+                            "GROUP_MSG|" + parts[1] + "|" + clientUsername + "|" + parts[2],
+                            this
+                    );
+
                 } else if (message.startsWith("CALL_REQUEST|")) {
                     String[] p = message.split("\\|");
                     Server.sendRawToUser(p[1], "CALL_REQUEST|" + clientUsername + "|" + p[2]);

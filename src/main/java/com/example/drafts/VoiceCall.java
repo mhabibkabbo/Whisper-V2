@@ -29,7 +29,6 @@ public class VoiceCall {
         this.udpSocket  = new DatagramSocket(localPort);
     }
 
-    /** Returns the local UDP port so it can be sent via signaling. */
     public int start() throws Exception {
         if (udpSocket == null) udpSocket = new DatagramSocket();
         udpSocket.setSoTimeout(0);

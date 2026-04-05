@@ -265,7 +265,8 @@ public class Database {
                         rs.getInt("id"),
                         rs.getString("user1"),
                         rs.getString("user2"),
-                        rs.getString("last_message")
+                        rs.getString("last_message"),
+                        rs.getString("last_timestamp")
                 );
                 list.add(conv);
             }
@@ -296,6 +297,20 @@ public class Database {
         }
 
         return results;
+    }
+
+    // Returns { sender, message, timestamp } of the last message in a group, or null
+    public static String[] getLastGroupMessage(int groupId) {
+        String sql = "SELECT sender, message, timestamp FROM group_messages " +
+                "WHERE group_id = ? ORDER BY timestamp DESC LIMIT 1";
+        try (Connection conn = connect(); PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setInt(1, groupId);
+            ResultSet rs = p.executeQuery();
+            if (rs.next()) return new String[]{
+                    rs.getString("sender"), rs.getString("message"), rs.getString("timestamp")
+            };
+        } catch (SQLException e) { e.printStackTrace(); }
+        return null;
     }
 
     // Save a message

@@ -8,13 +8,10 @@ import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -24,18 +21,18 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import javafx.util.Duration;
-
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +40,7 @@ import java.util.Map;
 import static com.example.drafts.Database.*;
 
 public class Controller {
+    @FXML private Button callButton;
     @FXML
     private VBox chatBackground;
     @FXML
@@ -94,6 +92,7 @@ public class Controller {
     private ImageView callerPicBanner;
     @FXML
     private Label callerNameBanner;
+    private Clip ringtoneClip;
 
     @FXML
     private VBox callScreen;
@@ -107,6 +106,7 @@ public class Controller {
     private Button muteBtn;
 
     public static Client currentClient;
+    private String firstContact;
     private String currentChatGroupName;
     private static Controller instance;
     Map<Integer, String> groupNames = new HashMap<>();
@@ -114,7 +114,7 @@ public class Controller {
     public void initialize() {
         instance = this;
         loadConversations();
-        profileName.setText("Friends Forever");
+        profileName.setText("Will remove");
         currentClient = new Client(getUsernameById(Session.getCurrentUserId()), this);
         searchContainer.setVisible(false);
         searchContainer.setManaged(false);
@@ -287,7 +287,7 @@ public class Controller {
             if (Session.getCurrentGroupId() != -1 && receiverID != -1) {
                 String senderName = Database.getUsernameById(receiverID);
                 Label senderLabel = new Label(senderName);
-                senderLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: gray; -fx-padding: 0 0 2 38;");
+                senderLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: gray; -fx-padding: 0 0 -2 38;");
                 messageContainer.getChildren().add(senderLabel);
             }
             messageBox.setAlignment(Pos.CENTER_LEFT);
@@ -345,30 +345,68 @@ public class Controller {
         return hbox;
     }
 
+//    private void loadConversations() {
+//        String myUsername = getUsernameById(Session.getCurrentUserId());
+//        List<Conversation> conversations = Database.getConversations(myUsername);
+//
+//        conversationListVBox.getChildren().clear();
+//
+//        for (Conversation conv : conversations) {
+//
+//            String otherUser = conv.getOtherUser(myUsername);
+//            String lastMsg = conv.getLastMessage();
+//            Image profilePicture = ImageHandler.getProfileImage(getUserIdByUsername(otherUser));
+//            HBox cell = createConversationCell(otherUser, lastMsg, profilePicture);
+//
+//            conversationListVBox.getChildren().add(cell);
+//        }
+//
+//        List<String[]> groups = Database.getGroupsForUser(myUsername);
+//        for (String[] g : groups) {
+//            int groupId = Integer.parseInt(g[0]);
+//            String groupName = g[1];
+//            groupNames.put(groupId, groupName);
+//            HBox cell = createGroupConversationCell(groupId, groupName, "");
+//            conversationListVBox.getChildren().add(cell);
+//        }
+//    }
+
     private void loadConversations() {
         String myUsername = getUsernameById(Session.getCurrentUserId());
-        List<Conversation> conversations = Database.getConversations(myUsername);
+        List<Object[]> allEntries = new ArrayList<>();
 
-        conversationListVBox.getChildren().clear();
+        for (Conversation conv : Database.getConversations(myUsername)) {
+            String otherUser  = conv.getOtherUser(myUsername);
+            String lastMsg    = conv.getLastMessage();
+            String timestamp  = conv.getLastTimestamp();
 
-        for (Conversation conv : conversations) {
-
-            String otherUser = conv.getOtherUser(myUsername);
-            String lastMsg = conv.getLastMessage();
-            Image profilePicture = ImageHandler.getProfileImage(getUserIdByUsername(otherUser));
-            HBox cell = createConversationCell(otherUser, lastMsg, profilePicture);
-
-            conversationListVBox.getChildren().add(cell);
+            Image  pic        = ImageHandler.getProfileImage(getUserIdByUsername(otherUser));
+            HBox   cell       = createConversationCell(otherUser, lastMsg, pic);
+            allEntries.add(new Object[]{ cell, timestamp != null ? timestamp : "1970-01-01 00:00:00" });
         }
 
-        List<String[]> groups = Database.getGroupsForUser(myUsername);
-        for (String[] g : groups) {
-            int groupId = Integer.parseInt(g[0]);
+        for (String[] g : Database.getGroupsForUser(myUsername)) {
+            int    groupId   = Integer.parseInt(g[0]);
             String groupName = g[1];
             groupNames.put(groupId, groupName);
-            HBox cell = createGroupConversationCell(groupId, groupName, "");
-            conversationListVBox.getChildren().add(cell);
+
+            String preview   = "";
+            String timestamp = "1970-01-01 00:00:00";
+
+            String[] last = Database.getLastGroupMessage(groupId);
+            if (last != null) {
+                preview   = last[0] + ": " + last[1];
+                timestamp = last[2];
+            }
+
+            HBox cell = createGroupConversationCell(groupId, groupName, preview);
+            allEntries.add(new Object[]{ cell, timestamp });
         }
+        allEntries.sort((a, b) -> ((String) b[1]).compareTo((String) a[1]));
+
+        conversationListVBox.getChildren().clear();
+        for (Object[] entry : allEntries)
+            conversationListVBox.getChildren().add((HBox) entry[0]);
     }
 
     private HBox createGroupConversationCell(int groupId, String groupName, String lastMsg) {
@@ -489,6 +527,9 @@ public class Controller {
     }
 
     private void openPrivateChat(String username) {
+        callButton.setVisible(true);
+        callButton.setManaged(true);
+
         Session.setCurrentGroupId(-1);
         currentChatUser = username;
         profileName.setText(getNameById(getUserIdByUsername(username)));
@@ -520,6 +561,9 @@ public class Controller {
     }
 
     private void openGroupChat(int groupId, String groupName) {
+        callButton.setVisible(false);
+        callButton.setManaged(false);
+
         Session.setCurrentGroupId(groupId);
         currentChatUser = null;
         currentChatGroupName = groupName;
@@ -545,39 +589,67 @@ public class Controller {
         }
     }
 
-    public void receiveGroupMessage(int groupId, String sender, String message) {
-        String myUsername = getUsernameById(Session.getCurrentUserId());
-        if (!sender.equals(myUsername)) {
-            Database.saveGroupMessage(groupId, sender, message);
-        }
+//    public void receiveGroupMessage(int groupId, String sender, String message) {
+//        String myUsername = getUsernameById(Session.getCurrentUserId());
+//        if (!sender.equals(myUsername)) {
+//            Database.saveGroupMessage(groupId, sender, message);
+//        }
+//
+//        if (groupId == Session.getCurrentGroupId()) {
+//            addMessage(message, false, Database.getUserIdByUsername(sender));
+//            Notification.playSound();
+//        } else {
+//            String groupName = groupNames.get(groupId);
+//            Notification.showMessageNotif(
+//                    groupName != null ? groupName : sender, sender + ": " + message
+//            );
+//        }
+//
+//        String groupName = groupNames.get(groupId);
+//        if (groupName != null) {
+//            addOrUpdateConversation("group:" + groupId, sender + "|" + message);
+//        }
+//    }
 
+    public void receiveGroupMessage(int groupId, String sender, String message) {
         if (groupId == Session.getCurrentGroupId()) {
             addMessage(message, false, Database.getUserIdByUsername(sender));
             Notification.playSound();
         } else {
             String groupName = groupNames.get(groupId);
-            Notification.showMessageNotif(
-                    groupName != null ? groupName : sender, sender + ": " + message
-            );
+            Notification.showMessageNotif(groupName != null ? groupName : sender, sender + ": " + message);
         }
 
         String groupName = groupNames.get(groupId);
-        if (groupName != null) {
-            addOrUpdateConversation("group:" + groupId, sender + "|" + message);
-        }
+        if (groupName != null) addOrUpdateConversation("group:" + groupId, sender + "|" + message);
     }
 
-    public void receivePrivateMessage(String sender, String message) {
+//    public void receivePrivateMessage(String sender, String message) {
+//
+//        String myUsername = getUsernameById(Session.getCurrentUserId());
+//
+//        if (sender.equals(currentChatUser)) {
+//            addMessage(message, false, getUserIdByUsername(sender));
+//            Notification.playSound();
+//            Database.saveMessage(getUserIdByUsername(sender), Session.getCurrentUserId(), message);
+//            Database.upsertConversation(sender, myUsername, message);
+//            addOrUpdateConversation("dm:" + sender, message);
+//        } else {
+//            Notification.showMessageNotif(sender, message);
+//        }
+//    }
 
+    public void receivePrivateMessage(String sender, String message) {
         String myUsername = getUsernameById(Session.getCurrentUserId());
 
         if (sender.equals(currentChatUser)) {
             addMessage(message, false, getUserIdByUsername(sender));
             Notification.playSound();
-            Database.saveMessage(getUserIdByUsername(sender), Session.getCurrentUserId(), message);
             Database.upsertConversation(sender, myUsername, message);
             addOrUpdateConversation("dm:" + sender, message);
         } else {
+            Database.upsertConversation(sender, myUsername, message);
+            addOrUpdateConversation("dm:" + sender, message);
             Notification.showMessageNotif(sender, message);
         }
     }
@@ -742,10 +814,24 @@ public class Controller {
         }
     }
 
+//    public void receivePrivateFile(String sender, String filename, String mimeType, byte[] data) {
+//        String myUsername = getUsernameById(Session.getCurrentUserId());
+//        int senderId = getUserIdByUsername(sender);
+//        Database.saveMessage(senderId, Session.getCurrentUserId(), "", data, filename, mimeType);
+//        Database.upsertConversation(sender, myUsername, "📎 " + filename);
+//
+//        if (sender.equals(currentChatUser)) {
+//            addAttachmentMessage(filename, mimeType, data, false, senderId);
+//            addOrUpdateConversation("dm:" + sender, "📎 " + filename);
+//            Notification.playSound();
+//        } else {
+//            Notification.showMessageNotif(sender, "📎 " + filename);
+//        }
+//    }
+
     public void receivePrivateFile(String sender, String filename, String mimeType, byte[] data) {
         String myUsername = getUsernameById(Session.getCurrentUserId());
         int senderId = getUserIdByUsername(sender);
-        Database.saveMessage(senderId, Session.getCurrentUserId(), "", data, filename, mimeType);
         Database.upsertConversation(sender, myUsername, "📎 " + filename);
 
         if (sender.equals(currentChatUser)) {
@@ -753,29 +839,44 @@ public class Controller {
             addOrUpdateConversation("dm:" + sender, "📎 " + filename);
             Notification.playSound();
         } else {
+            addOrUpdateConversation("dm:" + sender, "📎 " + filename);
             Notification.showMessageNotif(sender, "📎 " + filename);
         }
     }
 
-    public void receiveGroupFile(int groupId, String sender, String filename, String mimeType, byte[] data) {
-        String myUsername = getUsernameById(Session.getCurrentUserId());
-        if (!sender.equals(myUsername)) {
-            Database.saveGroupMessage(groupId, sender, "", data, filename, mimeType);
-        }
+//    public void receiveGroupFile(int groupId, String sender, String filename, String mimeType, byte[] data) {
+//        String myUsername = getUsernameById(Session.getCurrentUserId());
+//        if (!sender.equals(myUsername)) {
+//            Database.saveGroupMessage(groupId, sender, "", data, filename, mimeType);
+//        }
+//
+//        if (groupId == Session.getCurrentGroupId()) {
+//            addAttachmentMessage(filename, mimeType, data, false, getUserIdByUsername(sender));
+//            Notification.playSound();
+//        } else {
+//            String groupName = groupNames.get(groupId);
+//            Notification.showMessageNotif(
+//                    groupName != null ? groupName : sender, sender + ": 📎 " + filename
+//            );
+//        }
+//
+//        String groupName = groupNames.get(groupId);
+//        if (groupName != null) addOrUpdateConversation("group:" + groupId, sender + "|📎 " + filename);
+//    }
 
+    public void receiveGroupFile(int groupId, String sender, String filename, String mimeType, byte[] data) {
         if (groupId == Session.getCurrentGroupId()) {
             addAttachmentMessage(filename, mimeType, data, false, getUserIdByUsername(sender));
             Notification.playSound();
         } else {
             String groupName = groupNames.get(groupId);
-            Notification.showMessageNotif(
-                    groupName != null ? groupName : sender, sender + ": 📎 " + filename
-            );
+            Notification.showMessageNotif(groupName != null ? groupName : sender, sender + ": 📎 " + filename);
         }
 
         String groupName = groupNames.get(groupId);
         if (groupName != null) addOrUpdateConversation("group:" + groupId, sender + "|📎 " + filename);
     }
+
 
     // Call Handling
     @FXML
@@ -822,6 +923,7 @@ public class Controller {
             currentClient.sendCallReject(callPeer);
             callPeer = null;
         }
+        stopRingtone();
     }
 
     @FXML
@@ -829,6 +931,7 @@ public class Controller {
         hideIncomingCallBanner();
         currentClient.sendCallReject(callPeer);
         callPeer = null;
+        stopRingtone();
     }
 
     public void onCallAccepted(int theirUdpPort) {
@@ -908,14 +1011,20 @@ public class Controller {
         callerNameBanner.setText(Database.getNameById(callerId)); // int ✓
         incomingCallBanner.setManaged(true);
         incomingCallBanner.setVisible(true);
-        Animations.translateY(incomingCallBanner, 250, -30, 0, null).play();
+        Animations.translateY(incomingCallBanner, 250, -20, 0, null).play();
+        startRingtone();
     }
 
     private void hideIncomingCallBanner() {
         if (!incomingCallBanner.isVisible()) return;
-        Animations.translateY(incomingCallBanner, 200, 0, -30, () -> {
+        Animations.translateY(incomingCallBanner, 200, 0, -20, () -> {
             incomingCallBanner.setVisible(false);
             incomingCallBanner.setManaged(false);
+            Platform.runLater(() -> {
+                messageContainer.layout();
+                scrollPane.layout();
+                Platform.runLater(() -> scrollPane.setVvalue(1.0));
+            });
         }).play();
     }
 
@@ -954,5 +1063,25 @@ public class Controller {
             callScreen.setVisible(false);
             callScreen.setManaged(false);
         }).play();
+    }
+
+    private void startRingtone() {
+        try {
+            var url = getClass().getResource("/com/example/drafts/sounds/ringtone.wav");
+            if (url == null) return;
+            AudioInputStream ais = AudioSystem.getAudioInputStream(url);
+            ringtoneClip = AudioSystem.getClip();
+            ringtoneClip.open(ais);
+            ringtoneClip.loop(Clip.LOOP_CONTINUOUSLY);
+            ringtoneClip.start();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    private void stopRingtone() {
+        if (ringtoneClip != null) {
+            ringtoneClip.stop();
+            ringtoneClip.close();
+            ringtoneClip = null;
+        }
     }
 }
