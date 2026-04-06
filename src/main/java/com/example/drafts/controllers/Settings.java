@@ -49,15 +49,15 @@ public class Settings {
             VBox tile = new VBox(6);
             tile.setAlignment(Pos.CENTER);
             tile.getStyleClass().add("bg-tile");
-            tile.setPrefSize(100, 100);
+            tile.setPrefSize(200, 200);
 
             if (bg.file != null) {
                 try {
                     ImageView preview = new ImageView(
                             new Image(SceneManager.class.getResourceAsStream("Pictures/" + bg.file))
                     );
-                    preview.setFitWidth(85);
-                    preview.setFitHeight(65);
+                    preview.setFitWidth(180);
+                    preview.setFitHeight(160);
                     preview.setPreserveRatio(false);
                     tile.getChildren().add(preview);
                 } catch (Exception e) {
@@ -65,7 +65,7 @@ public class Settings {
                 }
             } else {
                 Pane empty = new Pane();
-                empty.setPrefSize(85, 65);
+                empty.setPrefSize(180, 160);
                 empty.getStyleClass().add("bg-tile-empty");
                 tile.getChildren().add(empty);
             }

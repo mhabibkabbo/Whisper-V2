@@ -5,6 +5,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -34,6 +35,7 @@ public class SceneManager {
         stage = primaryStage;
         stage.setScene(scene);
         stage.setTitle("Whisper");
+        stage.getIcons().add(new Image(SceneManager.class.getResourceAsStream("icons/logo.png")));
         stage.show();
 
         initNotifContainer(rootWrapper);

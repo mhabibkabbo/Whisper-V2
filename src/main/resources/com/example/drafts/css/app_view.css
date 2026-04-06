@@ -14,7 +14,7 @@
 }
 
 .chat-buttons {
-    -fx-background-color: -fx-primary-hover-25;
+    -fx-background-color: -fx-secondary-color;
     -fx-min-width: 50px;
     -fx-max-width: 50px;
     -fx-min-height: 50px;
@@ -22,7 +22,7 @@
 }
 
 .chat-buttons:hover {
-    -fx-background-color: -fx-primary-hover-50;
+    -fx-background-color: -fx-primary-hover-75;
 }
 
 .chat-text-area-need-change {
@@ -32,6 +32,27 @@
 
 .chat-bg {
     -fx-background-image: url("../Pictures/chat-background.jpg");
+    -fx-background-size: cover;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+.chat-bg-doodle {
+    -fx-background-image: url("../Pictures/doodle-background.jpg");
+    -fx-background-size: cover;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+.chat-bg-lines {
+    -fx-background-image: url("../Pictures/lines-background.jpg");
+    -fx-background-size: cover;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+.chat-bg-dots {
+    -fx-background-image: url("../Pictures/dots-background.jpg");
     -fx-background-size: cover;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;

@@ -49,12 +49,12 @@ public class Client {
         writer.flush();
     }
 
-    public void sendCallRequest(String receiver, int myUdpPort) {
-        sendMessage("CALL_REQUEST|" + receiver + "|" + myUdpPort);
+    public void sendCallRequest(String receiver, int myUdpPort, String myIp) {
+        sendMessage("CALL_REQUEST|" + receiver + "|" + myUdpPort + "|" + myIp);
     }
 
-    public void sendCallAccept(String caller, int myUdpPort) {
-        sendMessage("CALL_ACCEPT|" + caller + "|" + myUdpPort);
+    public void sendCallAccept(String caller, int myUdpPort, String myIp) {
+        sendMessage("CALL_ACCEPT|" + caller + "|" + myUdpPort + "|" + myIp);
     }
 
     public void sendCallReject(String caller) {
@@ -133,20 +133,23 @@ public class Client {
 
                 } else if (message.startsWith("CALL_REQUEST|")) {
                     String[] p = message.split("\\|");
-                    String caller      = p[1];
-                    int callerUdpPort  = Integer.parseInt(p[2]);
-                    Platform.runLater(() -> controller.onIncomingCall(caller, callerUdpPort));
+                    String caller     = p[1];
+                    int callerUdpPort = Integer.parseInt(p[2]);
+                    String callerIp   = p[3];
+                    Platform.runLater(() -> controller.onIncomingCall(caller, callerUdpPort, callerIp));
 
                 } else if (message.startsWith("CALL_ACCEPT|")) {
                     String[] p = message.split("\\|");
                     int theirUdpPort = Integer.parseInt(p[2]);
-                    Platform.runLater(() -> controller.onCallAccepted(theirUdpPort));
+                    String theirIp   = p[3];
+                    Platform.runLater(() -> controller.onCallAccepted(theirUdpPort, theirIp));
 
                 } else if (message.startsWith("CALL_REJECT|")) {
                     Platform.runLater(() -> controller.onCallRejected());
 
                 } else if (message.startsWith("CALL_END|")) {
                     Platform.runLater(() -> controller.onCallEnded());
+
                 } else if (message.startsWith("PM_HISTORY_ITEM|")) {
                     String[] parts = message.split("\\|", 8);
                     String peer = parts[1];
@@ -158,10 +161,12 @@ public class Client {
                     Platform.runLater(() ->
                             controller.onPrivateHistoryItem(peer, sender, text, attachmentName, attachmentType, attachmentData)
                     );
+
                 } else if (message.startsWith("PM_HISTORY_END|")) {
                     String[] parts = message.split("\\|", 2);
                     String peer = parts.length > 1 ? parts[1] : "";
                     Platform.runLater(() -> controller.onPrivateHistoryEnd(peer));
+
                 } else if (message.startsWith("GROUP_HISTORY_ITEM|")) {
                     String[] parts = message.split("\\|", 8);
                     int groupId = Integer.parseInt(parts[1]);
@@ -173,6 +178,7 @@ public class Client {
                     Platform.runLater(() ->
                             controller.onGroupHistoryItem(groupId, sender, text, attachmentName, attachmentType, attachmentData)
                     );
+
                 } else if (message.startsWith("GROUP_HISTORY_END|")) {
                     String[] parts = message.split("\\|", 2);
                     int groupId = parts.length > 1 ? Integer.parseInt(parts[1]) : -1;

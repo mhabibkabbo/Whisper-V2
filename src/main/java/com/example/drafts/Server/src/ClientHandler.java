@@ -97,25 +97,24 @@ public class ClientHandler implements Runnable {
 
                 } else if (message.startsWith("GROUP_FILE|")) {
                     String[] parts = message.split("\\|", 5);
-                    int groupId = Integer.parseInt(parts[1]);
+                    int groupId   = Integer.parseInt(parts[1]);
                     String filename = parts[2];
                     String mimeType = parts[3];
-                    byte[] data = Base64.getDecoder().decode(parts[4]);
+                    byte[] data     = Base64.getDecoder().decode(parts[4]);
                     Database.saveGroupMessage(groupId, clientUsername, "", data, filename, mimeType);
-                    Server.broadcastMessage(
+                    Server.broadcastToGroupMembers(groupId,
                             "GROUP_FILE|" + groupId + "|" + clientUsername + "|" + filename + "|" + mimeType + "|" + parts[4],
-                            this
-                    );
+                            this);
 
                 } else if (message.startsWith("GROUP_MSG|")) {
                     String[] parts = message.split("\\|", 3);
-                    int groupId = Integer.parseInt(parts[1]);
+                    int groupId       = Integer.parseInt(parts[1]);
                     String groupMessage = parts[2];
                     Database.saveGroupMessage(groupId, clientUsername, groupMessage);
-                    Server.broadcastMessage(
+                    Server.broadcastToGroupMembers(groupId,
                             "GROUP_MSG|" + groupId + "|" + clientUsername + "|" + groupMessage,
-                            this
-                    );
+                            this);
+
                 } else if (message.startsWith("LOAD_PM|")) {
                     String[] parts = message.split("\\|", 2);
                     if (parts.length == 2 && !parts[1].isBlank()) {
@@ -130,11 +129,11 @@ public class ClientHandler implements Runnable {
 
                 } else if (message.startsWith("CALL_REQUEST|")) {
                     String[] p = message.split("\\|");
-                    Server.sendRawToUser(p[1], "CALL_REQUEST|" + clientUsername + "|" + p[2]);
+                    Server.sendRawToUser(p[1], "CALL_REQUEST|" + clientUsername + "|" + p[2] + "|" + p[3]);
 
                 } else if (message.startsWith("CALL_ACCEPT|")) {
                     String[] p = message.split("\\|");
-                    Server.sendRawToUser(p[1], "CALL_ACCEPT|" + clientUsername + "|" + p[2]);
+                    Server.sendRawToUser(p[1], "CALL_ACCEPT|" + clientUsername + "|" + p[2] + "|" + p[3]);
 
                 } else if (message.startsWith("CALL_REJECT|")) {
                     Server.sendRawToUser(message.split("\\|")[1], "CALL_REJECT|" + clientUsername);

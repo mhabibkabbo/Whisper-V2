@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +79,7 @@ public class Controller {
     private ImageView attachmentPreviewThumb;
 
     // Voice call state
+    private String pendingCallerIp;
     private VoiceCall activeCall;
     private String callPeer;        // username of the other party
     private int pendingCallerUdpPort; // stored on incoming call until accepted
@@ -104,7 +106,6 @@ public class Controller {
     private Button muteBtn;
 
     public static Client currentClient;
-    private String firstContact;
     private String currentChatGroupName;
     private static Controller instance;
     Map<Integer, String> groupNames = new HashMap<>();
@@ -113,9 +114,21 @@ public class Controller {
 
     public void initialize() {
         instance = this;
-        loadConversations();
-        profileName.setText("Will remove");
+        String firstKey = loadConversations();
         currentClient = new Client(RemoteApi.getUsernameById(Session.getCurrentUserId()), this);
+
+        profileName.setText("Whisper");
+        if (firstKey != null) {
+            if (firstKey.startsWith("dm:")) {
+                String username = firstKey.substring(3);
+                openPrivateChat(username);
+            } else if (firstKey.startsWith("group:")) {
+                String[] parts  = firstKey.split(":", 3);
+                int    groupId   = Integer.parseInt(parts[1]);
+                String groupName = parts[2];
+                openGroupChat(groupId, groupName);
+            }
+        }
         searchContainer.setVisible(false);
         searchContainer.setManaged(false);
         searchContainer.setOpacity(0);
@@ -362,7 +375,7 @@ public class Controller {
 //        }
 //    }
 
-    private void loadConversations() {
+    private String loadConversations() {
         String myUsername = RemoteApi.getUsernameById(Session.getCurrentUserId());
         List<Object[]> allEntries = new ArrayList<>();
 
@@ -373,7 +386,7 @@ public class Controller {
 
             Image  pic        = ImageHandler.getProfileImage(RemoteApi.getUserIdByUsername(otherUser));
             HBox   cell       = createConversationCell(otherUser, lastMsg, pic);
-            allEntries.add(new Object[]{ cell, timestamp != null ? timestamp : "1970-01-01 00:00:00" });
+            allEntries.add(new Object[]{ cell, timestamp != null ? timestamp : "1970-01-01 00:00:00", "dm:" + otherUser });
         }
 
         for (String[] g : RemoteApi.getGroupsForUser(myUsername)) {
@@ -391,13 +404,15 @@ public class Controller {
             }
 
             HBox cell = createGroupConversationCell(groupId, groupName, preview);
-            allEntries.add(new Object[]{ cell, timestamp });
+            allEntries.add(new Object[]{ cell, timestamp, "group:" + groupId + ":" + groupName });
         }
         allEntries.sort((a, b) -> ((String) b[1]).compareTo((String) a[1]));
 
         conversationListVBox.getChildren().clear();
         for (Object[] entry : allEntries)
             conversationListVBox.getChildren().add((HBox) entry[0]);
+
+        return allEntries.isEmpty() ? null : (String) allEntries.get(0)[2];
     }
 
     private HBox createGroupConversationCell(int groupId, String groupName, String lastMsg) {
@@ -892,11 +907,10 @@ public class Controller {
         callPeer = currentChatUser;
         try {
             pendingLocalUdpPort = grabFreeUdpPort();
-            currentClient.sendCallRequest(currentChatUser, pendingLocalUdpPort);
+            String myIp = getLocalLanAddress().getHostAddress();
+            currentClient.sendCallRequest(currentChatUser, pendingLocalUdpPort, myIp); // send OUR IP
             showOutgoingCallScreen(currentChatUser);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private int grabFreeUdpPort() throws Exception {
@@ -905,23 +919,24 @@ public class Controller {
         }
     }
 
-    public void onIncomingCall(String caller, int callerUdpPort) {
-        if (activeCall != null) {
-            currentClient.sendCallReject(caller);
-            return;
-        }
-        callPeer = caller;
+    public void onIncomingCall(String caller, int callerUdpPort, String callerIp) {
+        if (activeCall != null) { currentClient.sendCallReject(caller); return; }
+        callPeer             = caller;
         pendingCallerUdpPort = callerUdpPort;
+        pendingCallerIp      = callerIp; // store it
         showIncomingCallBanner(caller);
     }
 
     @FXML
     private void handleAcceptCall() {
+        stopRingtone();
         hideIncomingCallBanner();
         try {
-            activeCall = new VoiceCall(InetAddress.getLocalHost(), pendingCallerUdpPort);
+            InetAddress callerAddr = InetAddress.getByName(pendingCallerIp); // use THEIR IP
+            activeCall = new VoiceCall(callerAddr, pendingCallerUdpPort);
             int myUdpPort = activeCall.start();
-            currentClient.sendCallAccept(callPeer, myUdpPort);
+            String myIp = getLocalLanAddress().getHostAddress();
+            currentClient.sendCallAccept(callPeer, myUdpPort, myIp); // send OUR IP
             showActiveCallScreen(callPeer);
             startCallTimer();
         } catch (Exception e) {
@@ -930,7 +945,6 @@ public class Controller {
             currentClient.sendCallReject(callPeer);
             callPeer = null;
         }
-        stopRingtone();
     }
 
     @FXML
@@ -941,10 +955,11 @@ public class Controller {
         stopRingtone();
     }
 
-    public void onCallAccepted(int theirUdpPort) {
+    public void onCallAccepted(int theirUdpPort, String theirIp) {
         hideOutgoingCallScreen();
         try {
-            activeCall = new VoiceCall(pendingLocalUdpPort, InetAddress.getLocalHost(), theirUdpPort);
+            InetAddress peerAddr = InetAddress.getByName(theirIp); // use THEIR IP
+            activeCall = new VoiceCall(pendingLocalUdpPort, peerAddr, theirUdpPort);
             activeCall.start();
             showActiveCallScreen(callPeer);
             startCallTimer();
@@ -1091,4 +1106,16 @@ public class Controller {
             ringtoneClip = null;
         }
     }
+
+    private InetAddress getLocalLanAddress() throws Exception {
+        for (var iface : java.util.Collections.list(NetworkInterface.getNetworkInterfaces())) {
+            if (iface.isLoopback() || !iface.isUp()) continue;
+            for (var addr : java.util.Collections.list(iface.getInetAddresses())) {
+                if (addr instanceof java.net.Inet4Address && !addr.isLoopbackAddress())
+                    return addr;
+            }
+        }
+        return InetAddress.getLocalHost();
+    }
+
 }

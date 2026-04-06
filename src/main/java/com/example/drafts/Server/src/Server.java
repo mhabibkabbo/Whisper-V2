@@ -48,11 +48,20 @@ public class Server {
         if (handler != null) handler.sendMessage(message);
     }
 
-    // Broadcast message to all clients
     public static void broadcastMessage(String message, ClientHandler sender) {
         for (ClientHandler client : clients) {
             if (client != sender) {
                 client.sendMessage(message);
+            }
+        }
+    }
+
+    public static void broadcastToGroupMembers(int groupId, String message, ClientHandler sender) {
+        List<String> members = Database.getGroupMembers(groupId);
+        for (String member : members) {
+            ClientHandler handler = onlineUsers.get(member);
+            if (handler != null && handler != sender) {
+                handler.sendMessage(message);
             }
         }
     }

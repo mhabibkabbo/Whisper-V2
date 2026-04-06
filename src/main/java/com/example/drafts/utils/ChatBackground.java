@@ -3,9 +3,9 @@ package com.example.drafts.utils;
 public enum ChatBackground {
     NONE("None", null, "chat-bg-none"),
     DEFAULT("Default", "chat-background.jpg", "chat-bg"),
-    DOODLE("Bubbles", "bg_bubbles.png", "chat-bg-bubbles"),
-    POLKA("Polka Dots", "bg_polka.png", "chat-bg-polka"),
-    LINES("Lines", "bg_lines.png", "chat-bg-lines");
+    DOODLE("Doodles", "doodle-background.jpg", "chat-bg-doodle"),
+    DOTS("Dots", "dots-background.jpg", "chat-bg-dots"),
+    LINES("Lines", "lines-background.jpg", "chat-bg-lines");
 
     public final String label;
     public final String file;
