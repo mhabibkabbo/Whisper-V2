@@ -9,8 +9,6 @@ import javafx.stage.Stage;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 
-import static com.example.drafts.Database.insertUser;
-
 public class SceneController {
 
     private Stage stage;

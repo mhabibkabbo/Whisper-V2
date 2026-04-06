@@ -4,6 +4,7 @@ import javafx.application.Platform;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class Client {
@@ -15,7 +16,7 @@ public class Client {
 
     public Client(String username, Controller controller) {
         try {
-            this.socket = new Socket("localhost", 5000); // server IP
+            this.socket = new Socket(NetworkConfig.SERVER_HOST, NetworkConfig.SERVER_PORT);
             this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.username = username;
@@ -62,6 +63,14 @@ public class Client {
 
     public void sendCallEnd(String peer) {
         sendMessage("CALL_END|" + peer);
+    }
+
+    public void requestPrivateHistory(String peerUsername) {
+        sendMessage("LOAD_PM|" + peerUsername);
+    }
+
+    public void requestGroupHistory(int groupId) {
+        sendMessage("LOAD_GROUP|" + groupId);
     }
 
     public void sendMessage(String message) {
@@ -138,6 +147,36 @@ public class Client {
 
                 } else if (message.startsWith("CALL_END|")) {
                     Platform.runLater(() -> controller.onCallEnded());
+                } else if (message.startsWith("PM_HISTORY_ITEM|")) {
+                    String[] parts = message.split("\\|", 8);
+                    String peer = parts[1];
+                    String sender = dec(parts[2]);
+                    String text = dec(parts[4]);
+                    String attachmentName = dec(parts[5]);
+                    String attachmentType = dec(parts[6]);
+                    byte[] attachmentData = decBytes(parts[7]);
+                    Platform.runLater(() ->
+                            controller.onPrivateHistoryItem(peer, sender, text, attachmentName, attachmentType, attachmentData)
+                    );
+                } else if (message.startsWith("PM_HISTORY_END|")) {
+                    String[] parts = message.split("\\|", 2);
+                    String peer = parts.length > 1 ? parts[1] : "";
+                    Platform.runLater(() -> controller.onPrivateHistoryEnd(peer));
+                } else if (message.startsWith("GROUP_HISTORY_ITEM|")) {
+                    String[] parts = message.split("\\|", 8);
+                    int groupId = Integer.parseInt(parts[1]);
+                    String sender = dec(parts[2]);
+                    String text = dec(parts[4]);
+                    String attachmentName = dec(parts[5]);
+                    String attachmentType = dec(parts[6]);
+                    byte[] attachmentData = decBytes(parts[7]);
+                    Platform.runLater(() ->
+                            controller.onGroupHistoryItem(groupId, sender, text, attachmentName, attachmentType, attachmentData)
+                    );
+                } else if (message.startsWith("GROUP_HISTORY_END|")) {
+                    String[] parts = message.split("\\|", 2);
+                    int groupId = parts.length > 1 ? Integer.parseInt(parts[1]) : -1;
+                    Platform.runLater(() -> controller.onGroupHistoryEnd(groupId));
                 }
             }
 
@@ -164,5 +203,15 @@ public class Client {
             if (writer != null) writer.close();
             if (socket != null) socket.close();
         } catch (IOException ignored) {}
+    }
+
+    private static String dec(String b64) {
+        if (b64 == null || b64.isEmpty()) return "";
+        return new String(Base64.getDecoder().decode(b64), StandardCharsets.UTF_8);
+    }
+
+    private static byte[] decBytes(String b64) {
+        if (b64 == null || b64.isEmpty()) return null;
+        return Base64.getDecoder().decode(b64);
     }
 }

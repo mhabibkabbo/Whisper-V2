@@ -1,6 +1,7 @@
 package com.example.drafts.controllers;
 
 import com.example.drafts.ImageHandler;
+import com.example.drafts.RemoteApi;
 import com.example.drafts.SceneManager;
 import com.example.drafts.Session;
 import com.example.drafts.utils.Animations;
@@ -21,8 +22,6 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 
-import static com.example.drafts.Database.*;
-import static com.example.drafts.Database.createGroupTables;
 import static com.example.drafts.PassHasher.hashPassword;
 
 public class LoginSignup {
@@ -43,12 +42,6 @@ public class LoginSignup {
     private File selectedImageFile;
 
     public void initialize() {
-        createMessageTable();
-        createUserTable();
-        createConversationTable();
-        createGroupTables();
-        migrateAttachmentColumns();
-
         Animations.fadeIn(container);
         signupPanel.setVisible(false);
     }
@@ -116,7 +109,7 @@ public class LoginSignup {
             return;
         }
 
-        int userId = login(username, password);
+        int userId = RemoteApi.login(username, password);
 
         if (userId != -1) {
             Notification.show("Login Successful!", Notification.Type.SUCCESS);
@@ -159,7 +152,7 @@ public class LoginSignup {
             }
         }
 
-        boolean success = insertUser(name, username, hashedPass, imageBytes);
+        boolean success = RemoteApi.insertUser(name, username, hashedPass, imageBytes);
         if(!success){
             Notification.show("Username already exists!", Notification.Type.ERROR);
             return;

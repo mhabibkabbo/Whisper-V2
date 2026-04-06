@@ -8,7 +8,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
-import static com.example.drafts.Database.insertUser;
 import static com.example.drafts.PassHasher.hashPassword;
 
 public class RegistrationController {
@@ -63,7 +62,7 @@ public class RegistrationController {
             }
         }
 
-        boolean success = insertUser(name, username, hashedPass, imageBytes);
+        boolean success = RemoteApi.insertUser(name, username, hashedPass, imageBytes);
         if(!success){
             warningLabel.setText("Username already exists!");
             return;

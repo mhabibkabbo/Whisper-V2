@@ -37,8 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.example.drafts.Database.*;
-
 public class Controller {
     @FXML private Button callButton;
     @FXML
@@ -110,12 +108,14 @@ public class Controller {
     private String currentChatGroupName;
     private static Controller instance;
     Map<Integer, String> groupNames = new HashMap<>();
+    private boolean loadingPrivateHistory;
+    private boolean loadingGroupHistory;
 
     public void initialize() {
         instance = this;
         loadConversations();
         profileName.setText("Will remove");
-        currentClient = new Client(getUsernameById(Session.getCurrentUserId()), this);
+        currentClient = new Client(RemoteApi.getUsernameById(Session.getCurrentUserId()), this);
         searchContainer.setVisible(false);
         searchContainer.setManaged(false);
         searchContainer.setOpacity(0);
@@ -192,8 +192,7 @@ public class Controller {
             if (groupId != -1) {
                 try {
                     currentClient.sendGroupFile(groupId, name, mime, data);
-                    String myUsername = getUsernameById(Session.getCurrentUserId());
-                    Database.saveGroupMessage(groupId, myUsername, caption, data, name, mime);
+                    String myUsername = RemoteApi.getUsernameById(Session.getCurrentUserId());
                     addAttachmentMessage(name, mime, data, true, Session.getCurrentUserId());
                     addOrUpdateConversation("group:" + groupId, myUsername + "|📎 " + name);
                 } catch (IOException e) {
@@ -204,9 +203,6 @@ public class Controller {
                 try {
                     currentClient.sendPrivateFile(currentChatUser, name, mime, data);
                     int myId = Session.getCurrentUserId();
-                    int receiverId = getUserIdByUsername(currentChatUser);
-                    Database.saveMessage(myId, receiverId, caption, data, name, mime);
-                    Database.upsertConversation(getUsernameById(myId), currentChatUser, "📎 " + name);
                     addAttachmentMessage(name, mime, data, true, myId);
                     addOrUpdateConversation("dm:" + currentChatUser, "📎 " + name);
                 } catch (IOException e) {
@@ -232,20 +228,15 @@ public class Controller {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            String myUsername = Database.getUsernameById(Session.getCurrentUserId());
-            Database.saveGroupMessage(groupId, myUsername, message);
+            String myUsername = RemoteApi.getUsernameById(Session.getCurrentUserId());
             addMessage(message, true);
             addOrUpdateConversation("group:" + Session.getCurrentGroupId(), myUsername + "|" + message);
 
         } else if (currentChatUser != null) {
             currentClient.sendMessage("PM|" + currentChatUser + "|" + message);
-            int receiverId = getUserIdByUsername(currentChatUser);
+            int receiverId = RemoteApi.getUserIdByUsername(currentChatUser);
             addMessage(message, true, receiverId);
             addOrUpdateConversation("dm:" + currentChatUser, message);
-            int myId = Session.getCurrentUserId();
-            String myUsername = getUsernameById(Session.getCurrentUserId());
-            Database.upsertConversation(myUsername, currentChatUser, message);
-            Database.saveMessage(myId, receiverId, message);
         }
         messageField.clear();
     }
@@ -285,7 +276,7 @@ public class Controller {
             messageBox.getChildren().addAll(messageLabel, profileImageView);
         } else {
             if (Session.getCurrentGroupId() != -1 && receiverID != -1) {
-                String senderName = Database.getUsernameById(receiverID);
+                String senderName = RemoteApi.getUsernameById(receiverID);
                 Label senderLabel = new Label(senderName);
                 senderLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: gray; -fx-padding: 0 0 -2 38;");
                 messageContainer.getChildren().add(senderLabel);
@@ -372,20 +363,20 @@ public class Controller {
 //    }
 
     private void loadConversations() {
-        String myUsername = getUsernameById(Session.getCurrentUserId());
+        String myUsername = RemoteApi.getUsernameById(Session.getCurrentUserId());
         List<Object[]> allEntries = new ArrayList<>();
 
-        for (Conversation conv : Database.getConversations(myUsername)) {
+        for (Conversation conv : RemoteApi.getConversations(myUsername)) {
             String otherUser  = conv.getOtherUser(myUsername);
             String lastMsg    = conv.getLastMessage();
             String timestamp  = conv.getLastTimestamp();
 
-            Image  pic        = ImageHandler.getProfileImage(getUserIdByUsername(otherUser));
+            Image  pic        = ImageHandler.getProfileImage(RemoteApi.getUserIdByUsername(otherUser));
             HBox   cell       = createConversationCell(otherUser, lastMsg, pic);
             allEntries.add(new Object[]{ cell, timestamp != null ? timestamp : "1970-01-01 00:00:00" });
         }
 
-        for (String[] g : Database.getGroupsForUser(myUsername)) {
+        for (String[] g : RemoteApi.getGroupsForUser(myUsername)) {
             int    groupId   = Integer.parseInt(g[0]);
             String groupName = g[1];
             groupNames.put(groupId, groupName);
@@ -393,7 +384,7 @@ public class Controller {
             String preview   = "";
             String timestamp = "1970-01-01 00:00:00";
 
-            String[] last = Database.getLastGroupMessage(groupId);
+            String[] last = RemoteApi.getLastGroupMessage(groupId);
             if (last != null) {
                 preview   = last[0] + ": " + last[1];
                 timestamp = last[2];
@@ -474,7 +465,7 @@ public class Controller {
             conversationListVBox.getChildren().add(0, existingCell);
         } else if (key.startsWith("dm:")) {
             String username = key.replace("dm:", "");
-            Image profilePic = ImageHandler.getProfileImage(Database.getUserIdByUsername(username));
+            Image profilePic = ImageHandler.getProfileImage(RemoteApi.getUserIdByUsername(username));
             HBox newCell = createConversationCell(username, lastMessage, profilePic);
             conversationListVBox.getChildren().add(0, newCell);
         }
@@ -494,7 +485,7 @@ public class Controller {
             return;
         }
 
-        List<String> users = Database.searchUsers(searchText);
+        List<String> users = RemoteApi.searchUsers(searchText);
         boolean anyValidUserFound = false;
 
         for (String username : users) {
@@ -532,32 +523,13 @@ public class Controller {
 
         Session.setCurrentGroupId(-1);
         currentChatUser = username;
-        profileName.setText(getNameById(getUserIdByUsername(username)));
-        currentChatUserPicture.setImage(ImageHandler.getProfileImage(getUserIdByUsername(username)));
+        profileName.setText(RemoteApi.getNameById(RemoteApi.getUserIdByUsername(username)));
+        currentChatUserPicture.setImage(ImageHandler.getProfileImage(RemoteApi.getUserIdByUsername(username)));
         Circle clip = new Circle(20, 20, 20);
         currentChatUserPicture.setClip(clip);
         messageContainer.getChildren().clear();
-
-        int myId = Session.getCurrentUserId();
-        int otherId = getUserIdByUsername(username);
-        List<Message> history = Database.getMessagesBetween(myId, otherId);
-
-        for (Message msg : history) {
-            boolean isMe = msg.getSenderId() == myId;
-            if (msg.hasAttachment()) {
-                addAttachmentMessage(
-                        msg.getAttachmentName(), msg.getAttachmentType(), msg.getAttachmentData(),
-                        isMe, isMe ? myId : otherId
-                );
-            } else {
-                addMessage(msg.getContent(), isMe, otherId);
-            }
-
-            Platform.runLater(() -> {
-                scrollPane.layout();
-                scrollPane.setVvalue(1.0);
-            });
-        }
+        loadingPrivateHistory = true;
+        currentClient.requestPrivateHistory(username);
     }
 
     private void openGroupChat(int groupId, String groupName) {
@@ -570,23 +542,8 @@ public class Controller {
         profileName.setText(groupName);
         // currentChatUserPicture.setImage();
         messageContainer.getChildren().clear();
-
-        List<GroupMessage> history = Database.getGroupMessages(groupId);
-        String myUsername = Database.getUsernameById(Session.getCurrentUserId());
-        for (GroupMessage gm : history) {
-            boolean isMe = gm.getSenderUsername().equals(myUsername);
-            int senderId = isMe ? Session.getCurrentUserId() : Database.getUserIdByUsername(gm.getSenderUsername());
-            if (gm.hasAttachment()) {
-                addAttachmentMessage(gm.getAttachmentName(), gm.getAttachmentType(), gm.getAttachmentData(), isMe, senderId);
-            } else {
-                addMessage(gm.getContent(), isMe, senderId);
-            }
-
-            Platform.runLater(() -> {
-                scrollPane.layout();
-                scrollPane.setVvalue(1.0);
-            });
-        }
+        loadingGroupHistory = true;
+        currentClient.requestGroupHistory(groupId);
     }
 
 //    public void receiveGroupMessage(int groupId, String sender, String message) {
@@ -613,7 +570,7 @@ public class Controller {
 
     public void receiveGroupMessage(int groupId, String sender, String message) {
         if (groupId == Session.getCurrentGroupId()) {
-            addMessage(message, false, Database.getUserIdByUsername(sender));
+            addMessage(message, false, RemoteApi.getUserIdByUsername(sender));
             Notification.playSound();
         } else {
             String groupName = groupNames.get(groupId);
@@ -640,15 +597,11 @@ public class Controller {
 //    }
 
     public void receivePrivateMessage(String sender, String message) {
-        String myUsername = getUsernameById(Session.getCurrentUserId());
-
         if (sender.equals(currentChatUser)) {
-            addMessage(message, false, getUserIdByUsername(sender));
+            addMessage(message, false, RemoteApi.getUserIdByUsername(sender));
             Notification.playSound();
-            Database.upsertConversation(sender, myUsername, message);
             addOrUpdateConversation("dm:" + sender, message);
         } else {
-            Database.upsertConversation(sender, myUsername, message);
             addOrUpdateConversation("dm:" + sender, message);
             Notification.showMessageNotif(sender, message);
         }
@@ -830,9 +783,7 @@ public class Controller {
 //    }
 
     public void receivePrivateFile(String sender, String filename, String mimeType, byte[] data) {
-        String myUsername = getUsernameById(Session.getCurrentUserId());
-        int senderId = getUserIdByUsername(sender);
-        Database.upsertConversation(sender, myUsername, "📎 " + filename);
+        int senderId = RemoteApi.getUserIdByUsername(sender);
 
         if (sender.equals(currentChatUser)) {
             addAttachmentMessage(filename, mimeType, data, false, senderId);
@@ -866,7 +817,7 @@ public class Controller {
 
     public void receiveGroupFile(int groupId, String sender, String filename, String mimeType, byte[] data) {
         if (groupId == Session.getCurrentGroupId()) {
-            addAttachmentMessage(filename, mimeType, data, false, getUserIdByUsername(sender));
+            addAttachmentMessage(filename, mimeType, data, false, RemoteApi.getUserIdByUsername(sender));
             Notification.playSound();
         } else {
             String groupName = groupNames.get(groupId);
@@ -875,6 +826,62 @@ public class Controller {
 
         String groupName = groupNames.get(groupId);
         if (groupName != null) addOrUpdateConversation("group:" + groupId, sender + "|📎 " + filename);
+    }
+
+    public void onPrivateHistoryItem(String peer, String sender, String message,
+                                     String attachmentName, String attachmentType, byte[] attachmentData) {
+        if (!loadingPrivateHistory) return;
+        if (currentChatUser == null || !currentChatUser.equals(peer)) return;
+
+        String myUsername = RemoteApi.getUsernameById(Session.getCurrentUserId());
+        boolean isMe = sender.equals(myUsername);
+        int profileId = isMe ? Session.getCurrentUserId() : RemoteApi.getUserIdByUsername(sender);
+
+        if (attachmentData != null && attachmentData.length > 0) {
+            addAttachmentMessage(attachmentName, attachmentType, attachmentData, isMe, profileId);
+        }
+        if (message != null && !message.isBlank()) {
+            addMessage(message, isMe, profileId);
+        }
+    }
+
+    public void onPrivateHistoryEnd(String peer) {
+        if (currentChatUser != null && currentChatUser.equals(peer)) {
+            loadingPrivateHistory = false;
+            Platform.runLater(() -> {
+                messageContainer.layout();
+                scrollPane.layout();
+                scrollPane.setVvalue(1.0);
+            });
+        }
+    }
+
+    public void onGroupHistoryItem(int groupId, String sender, String message,
+                                   String attachmentName, String attachmentType, byte[] attachmentData) {
+        if (!loadingGroupHistory) return;
+        if (Session.getCurrentGroupId() != groupId) return;
+
+        String myUsername = RemoteApi.getUsernameById(Session.getCurrentUserId());
+        boolean isMe = sender.equals(myUsername);
+        int profileId = isMe ? Session.getCurrentUserId() : RemoteApi.getUserIdByUsername(sender);
+
+        if (attachmentData != null && attachmentData.length > 0) {
+            addAttachmentMessage(attachmentName, attachmentType, attachmentData, isMe, profileId);
+        }
+        if (message != null && !message.isBlank()) {
+            addMessage(message, isMe, profileId);
+        }
+    }
+
+    public void onGroupHistoryEnd(int groupId) {
+        if (Session.getCurrentGroupId() == groupId) {
+            loadingGroupHistory = false;
+            Platform.runLater(() -> {
+                messageContainer.layout();
+                scrollPane.layout();
+                scrollPane.setVvalue(1.0);
+            });
+        }
     }
 
 
@@ -1006,9 +1013,9 @@ public class Controller {
     }
 
     private void showIncomingCallBanner(String caller) {
-        int callerId = Database.getUserIdByUsername(caller);
+        int callerId = RemoteApi.getUserIdByUsername(caller);
         callerPicBanner.setImage(ImageHandler.getProfileImage(callerId));
-        callerNameBanner.setText(Database.getNameById(callerId)); // int ✓
+        callerNameBanner.setText(RemoteApi.getNameById(callerId)); // int ✓
         incomingCallBanner.setManaged(true);
         incomingCallBanner.setVisible(true);
         Animations.translateY(incomingCallBanner, 250, -20, 0, null).play();
@@ -1029,9 +1036,9 @@ public class Controller {
     }
 
     private void showOutgoingCallScreen(String peer) {
-        int peerId = Database.getUserIdByUsername(peer);
+        int peerId = RemoteApi.getUserIdByUsername(peer);
         callScreenPic.setImage(ImageHandler.getProfileImage(peerId));
-        callScreenName.setText(Database.getNameById(peerId)); // int ✓
+        callScreenName.setText(RemoteApi.getNameById(peerId)); // int ✓
         callDurationLabel.setText("Calling…");
         callScreen.setManaged(true);
         callScreen.setVisible(true);
@@ -1046,9 +1053,9 @@ public class Controller {
     }
 
     private void showActiveCallScreen(String peer) {
-        int peerId = Database.getUserIdByUsername(peer);
+        int peerId = RemoteApi.getUserIdByUsername(peer);
         callScreenPic.setImage(ImageHandler.getProfileImage(peerId));
-        callScreenName.setText(Database.getNameById(peerId)); // was getNameById(peer) — String bug fixed ✓
+        callScreenName.setText(RemoteApi.getNameById(peerId)); // was getNameById(peer) — String bug fixed ✓
         muteBtn.setText("Mute");
         muteBtn.getStyleClass().removeAll("mute-active", "mute-inactive");
         muteBtn.getStyleClass().add("mute-inactive");

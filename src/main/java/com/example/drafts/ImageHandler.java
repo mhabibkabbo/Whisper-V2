@@ -11,13 +11,11 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
-import static com.example.drafts.Database.getProfilePicture;
-
 public class ImageHandler {
 
     public static Image getProfileImage(int userId) {
 
-        byte[] imageBytes = getProfilePicture(userId);
+        byte[] imageBytes = RemoteApi.getProfilePicture(userId);
 
         if (imageBytes != null && imageBytes.length > 0) {
             return new Image(new ByteArrayInputStream(imageBytes));

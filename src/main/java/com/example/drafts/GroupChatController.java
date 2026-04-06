@@ -26,8 +26,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.example.drafts.Database.getUsernameById;
-
 public class GroupChatController {
 
     @FXML public TextField groupNameField;
@@ -54,7 +52,7 @@ public class GroupChatController {
             return;
         }
 
-        List<String> users = Database.searchUsers(searchText);
+        List<String> users = RemoteApi.searchUsers(searchText);
         boolean anyValidUserFound = false;
 
         for (String username : users) {
@@ -159,8 +157,8 @@ public class GroupChatController {
             Notification.show("Group Name or Members cannot be empty!", Notification.Type.INFO);
             return;
         }
-        String myUsername = Database.getUsernameById(Session.getCurrentUserId());
-        int groupId = Database.createGroup(groupName, myUsername, new ArrayList<>(selectedMembers));
+        String myUsername = RemoteApi.getUsernameById(Session.getCurrentUserId());
+        int groupId = RemoteApi.createGroup(groupName, myUsername, new ArrayList<>(selectedMembers));
         if (groupId != -1) {
             Controller.currentClient.sendMessage("CREATE_GROUP|" + groupId + "|" + myUsername
                     + "|" + String.join(",", selectedMembers));

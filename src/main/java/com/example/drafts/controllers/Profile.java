@@ -21,9 +21,9 @@ public class Profile {
     @FXML
     public void initialize() {
         int id = Session.getCurrentUserId();
-        nameField.setText(Database.getNameById(id));
+        nameField.setText(RemoteApi.getNameById(id));
 
-        byte[] pic = Database.getProfilePicture(id);
+        byte[] pic = RemoteApi.getProfilePicture(id);
         if (pic != null) {
             profilePicView.setImage(new Image(new ByteArrayInputStream(pic)));
         } else {
@@ -47,7 +47,7 @@ public class Profile {
 
         try {
             byte[] bytes = ImageHandler.processProfileImage(file);
-            boolean ok = Database.updateProfilePicture(Session.getCurrentUserId(), bytes);
+            boolean ok = RemoteApi.updateProfilePicture(Session.getCurrentUserId(), bytes);
             if (ok) {
                 profilePicView.setImage(new Image(new ByteArrayInputStream(bytes)));
                 Notification.show("Profile picture updated!", Notification.Type.SUCCESS);
@@ -62,7 +62,7 @@ public class Profile {
 
     @FXML
     private void removePicture() {
-        boolean ok = Database.updateProfilePicture(Session.getCurrentUserId(), null);
+        boolean ok = RemoteApi.updateProfilePicture(Session.getCurrentUserId(), null);
         if (ok) {
             profilePicView.setImage(new Image(
                     getClass().getResourceAsStream("/com/example/drafts/icons/user.png")
@@ -78,7 +78,7 @@ public class Profile {
             Notification.show("Name cannot be empty.", Notification.Type.ERROR);
             return;
         }
-        boolean ok = Database.updateName(Session.getCurrentUserId(), name);
+        boolean ok = RemoteApi.updateName(Session.getCurrentUserId(), name);
         if (ok) Notification.show("Name updated!", Notification.Type.SUCCESS);
         else    Notification.show("Failed to update name.", Notification.Type.ERROR);
     }
@@ -98,7 +98,7 @@ public class Profile {
             return;
         }
 
-        boolean ok = Database.updatePassword(Session.getCurrentUserId(), current, next);
+        boolean ok = RemoteApi.updatePassword(Session.getCurrentUserId(), current, next);
         if (ok) {
             currentPassword.clear();
             newPassword.clear();

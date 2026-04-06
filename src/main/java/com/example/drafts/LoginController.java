@@ -12,8 +12,6 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-import static com.example.drafts.Database.*;
-
 public class LoginController {
     public int id;
     @FXML
@@ -24,10 +22,6 @@ public class LoginController {
     private PasswordField passwordField;
     public void initialize()
     {
-        createMessageTable();
-        createUserTable();
-        createConversationTable();
-        createGroupTables();
     }
     @FXML
     public void switchToRegistrationScene(javafx.event.ActionEvent actionEvent) throws IOException {
@@ -50,7 +44,7 @@ public class LoginController {
             return;
         }
 
-        int userId = login(username, password);
+        int userId = RemoteApi.login(username, password);
 
         if (userId != -1) {
             System.out.println("Login successful!");

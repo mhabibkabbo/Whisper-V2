@@ -24,6 +24,8 @@ public class Conversation {
     }
 
     public String getLastTimestamp() { return lastTimestamp; }
+    public String getUser1() { return user1; }
+    public String getUser2() { return user2; }
 
     public String getOtherUser(String myUsername) {
         return myUsername.equals(user1) ? user2 : user1;
