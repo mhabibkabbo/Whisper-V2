@@ -88,8 +88,12 @@ System.getProperty("whisper.server.host", "YOUR_IPV4_ADDRESS");
 ### Step 4: Build the Application
 
 Run these commands sequentially where **build.gradle** file is located:
+- To clean the previous build!
 ```bash
 .\gradlew clean
+```
+- To build the current project
+```bash
 .\gradlew jpackage
 ```
 ---
@@ -137,8 +141,15 @@ Educational and personal use.
 ---
 
 ## Contributors
-**Md. Mishkatul Habib Kabbo** \Undergrad Student, CSE-24, BUET\
-**Yeasin Anzam Rifat** \Undergrad Student, CSE-24, BUET
+**Md. Mishkatul Habib**
+\
+Undergrad Student\
+CSE-24, BUET\
+\
+**Yeasin Anzam Rifat**
+\
+Undergrad Student\
+CSE-24, BUET
 
 ## Support
 If you like this project, give it a star on GitHub!
