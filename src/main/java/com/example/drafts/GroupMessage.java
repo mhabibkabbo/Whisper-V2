@@ -19,18 +19,18 @@ public class GroupMessage {
         this.attachmentType = attachmentType;
     }
 
-    public GroupMessage(String senderUsername, String content, String timestamp) {
-        this.senderUsername = senderUsername;
-        this.content = content;
-        this.timestamp = timestamp;
-    }
-
-    public GroupMessage(int groupId, String senderUsername, String content, String timestamp) {
-        this.groupId = groupId;
-        this.senderUsername = senderUsername;
-        this.content = content;
-        this.timestamp = timestamp;
-    }
+//    public GroupMessage(String senderUsername, String content, String timestamp) {
+//        this.senderUsername = senderUsername;
+//        this.content = content;
+//        this.timestamp = timestamp;
+//    }
+//
+//    public GroupMessage(int groupId, String senderUsername, String content, String timestamp) {
+//        this.groupId = groupId;
+//        this.senderUsername = senderUsername;
+//        this.content = content;
+//        this.timestamp = timestamp;
+//    }
 
     public String getSenderUsername() { return senderUsername; }
     public String getContent() { return content; }

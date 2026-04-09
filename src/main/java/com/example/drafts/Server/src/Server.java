@@ -13,7 +13,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class Server {
-
     public static CopyOnWriteArrayList<ClientHandler> clients =
             new CopyOnWriteArrayList<>();
 
