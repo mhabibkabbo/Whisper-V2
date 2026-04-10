@@ -83,6 +83,12 @@ with:
 public static final String SERVER_HOST =
 System.getProperty("whisper.server.host", "YOUR_IPV4_ADDRESS");
 ```
+If you don't have JAVA_HOME environment variable added, add this before running the commands.
+```bash
+JAVA_HOME: /path/to/jdk/directory
+```
+Example path: ``C:\Users\<username>\.jdks\ms-21.0.10``
+
 ---
 
 ### Step 4: Build the Application
