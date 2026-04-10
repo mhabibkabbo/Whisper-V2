@@ -8,13 +8,6 @@ public class Conversation {
     private String lastMessage;
     private String lastTimestamp;
 
-//    public Conversation(int id, String user1, String user2, String lastMessage) {
-//        this.id = id;
-//        this.user1 = user1;
-//        this.user2 = user2;
-//        this.lastMessage = lastMessage;
-//    }
-
     public Conversation(int id, String user1, String user2, String lastMessage, String lastTimestamp) {
         this.id = id;
         this.user1 = user1;

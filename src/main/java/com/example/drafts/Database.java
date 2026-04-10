@@ -66,7 +66,6 @@ public class Database {
     }
 
     public static boolean updatePassword(int userId, String currentRaw, String newRaw) {
-        // verify current password first
         String sql = "SELECT password FROM users WHERE id = ?";
         try (Connection conn = connect();
              PreparedStatement p = conn.prepareStatement(sql)) {
@@ -76,7 +75,6 @@ public class Database {
             if (!rs.getString("password").equals(PassHasher.hashPassword(currentRaw))) return false;
         } catch (SQLException e) { e.printStackTrace(); return false; }
 
-        // update
         String update = "UPDATE users SET password = ? WHERE id = ?";
         try (Connection conn = connect();
              PreparedStatement p = conn.prepareStatement(update)) {
@@ -137,7 +135,7 @@ public class Database {
             e.printStackTrace();
         }
 
-        return null; // if not found
+        return null;
     }
     public static int getUserIdByUsername(String username) {
         String sql = "SELECT id FROM users WHERE username = ?";
@@ -314,20 +312,6 @@ public class Database {
     }
 
     // Save a message
-//    public static void saveMessage(int senderId, int receiverId, String message) {
-//        String sql = "INSERT INTO messages(sender_id, receiver_id, message) VALUES(?, ?, ?)";
-//        try (Connection conn = connect();
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//            pstmt.setInt(1, senderId);
-//            pstmt.setInt(2, receiverId);
-//            pstmt.setString(3, message);
-//            pstmt.executeUpdate();
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-    // Replaces the existing saveMessage — keeps old 3-arg signature as a delegate
     public static void saveMessage(int senderId, int receiverId, String message) {
         saveMessage(senderId, receiverId, message, null, null, null);
     }
@@ -351,33 +335,6 @@ public class Database {
     }
 
     // Load chat history between two users
-//    public static List<Message> getMessagesBetween(int userId1, int userId2) {
-//        List<Message> messages = new ArrayList<>();
-//        String sql = """
-//        SELECT sender_id, message, timestamp FROM messages
-//        WHERE (sender_id = ? AND receiver_id = ?)
-//           OR (sender_id = ? AND receiver_id = ?)
-//        ORDER BY timestamp ASC
-//    """;
-//        try (Connection conn = connect();
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//            pstmt.setInt(1, userId1); pstmt.setInt(2, userId2);
-//            pstmt.setInt(3, userId2); pstmt.setInt(4, userId1);
-//            ResultSet rs = pstmt.executeQuery();
-//            while (rs.next()) {
-//                messages.add(new Message(
-//                        rs.getInt("sender_id"),
-//                        rs.getString("message"),
-//                        rs.getString("timestamp")
-//                ));
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return messages;
-//    }
-
-    // Updated getMessagesBetween — include attachment columns
     public static List<Message> getMessagesBetween(int userId1, int userId2) {
         List<Message> messages = new ArrayList<>();
         String sql = """
@@ -513,7 +470,6 @@ public class Database {
             ResultSet keys = pstmt.getGeneratedKeys();
             if (keys.next()) {
                 int groupId = keys.getInt(1);
-                // Insert all members including the creator
                 String memberSql = "INSERT INTO group_members(group_id, username) VALUES(?, ?)";
                 try (PreparedStatement mp = conn.prepareStatement(memberSql)) {
                     mp.setInt(1, groupId);
@@ -529,17 +485,6 @@ public class Database {
         } catch (SQLException e) { e.printStackTrace(); }
         return -1;
     }
-
-//    public static void saveGroupMessage(int groupId, String sender, String message) {
-//        String sql = "INSERT INTO group_messages(group_id, sender, message) VALUES(?, ?, ?)";
-//        try (Connection conn = connect();
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//            pstmt.setInt(1, groupId);
-//            pstmt.setString(2, sender);
-//            pstmt.setString(3, message);
-//            pstmt.executeUpdate();
-//        } catch (SQLException e) { e.printStackTrace(); }
-//    }
 
     public static void saveGroupMessage(int groupId, String sender, String message) {
         saveGroupMessage(groupId, sender, message, null, null, null);
@@ -563,21 +508,6 @@ public class Database {
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-//    public static List<GroupMessage> getGroupMessages(int groupId) {
-//        List<GroupMessage> list = new ArrayList<>();
-//        String sql = "SELECT sender, message, timestamp FROM group_messages WHERE group_id = ? ORDER BY timestamp ASC";
-//        try (Connection conn = connect();
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//            pstmt.setInt(1, groupId);
-//            ResultSet rs = pstmt.executeQuery();
-//            while (rs.next()) {
-//                list.add(new GroupMessage(rs.getString("sender"), rs.getString("message"), rs.getString("timestamp")));
-//            }
-//        } catch (SQLException e) { e.printStackTrace(); }
-//        return list;
-//    }
-
-    // Same for getGroupMessages
     public static List<GroupMessage> getGroupMessages(int groupId) {
         List<GroupMessage> list = new ArrayList<>();
         String sql = """

@@ -34,7 +34,6 @@ public class ClientHandler implements Runnable {
                 Server.onlineUsers.put(clientUsername, this);
                 System.out.println(clientUsername + " joined the chat.");
             }
-            //Server.broadcastMessage(clientUsername + " joined the chat!", this);
         } catch (IOException e) {
             closeEverything();
         }

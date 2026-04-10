@@ -14,6 +14,5 @@ public class Main extends Application {
         Font.loadFont(getClass().getResourceAsStream("fonts/Outfit-SemiBold.ttf"), 10);
 
         SceneManager.init(stage, "splash.fxml");
-//        SceneManager.init(stage, "login_signup.fxml");
     }
 }

@@ -19,7 +19,8 @@ java {
 }
 
 application {
-    mainClass = 'com.example.drafts.Main' // 🔥 change this
+    mainClass = 'com.example.drafts.Main'
+    applicationDefaultJvmArgs = ['-Dprism.lcdtext=false']
 }
 
 javafx {

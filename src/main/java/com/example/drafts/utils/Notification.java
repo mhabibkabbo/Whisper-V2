@@ -23,7 +23,7 @@ public class Notification {
                     SceneManager.class.getResource("sounds/notification.mp3").toExternalForm()
             );
         } catch (Exception e) {
-            notifSound = null; // sound file missing, silently skip
+            notifSound = null;
         }
     }
 

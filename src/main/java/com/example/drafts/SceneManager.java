@@ -42,7 +42,7 @@ public class SceneManager {
     }
 
     public static void initNotifContainer(StackPane wrapper) {
-        notifContainer = new VBox(10); // 8px gap between notifications
+        notifContainer = new VBox(10);
         notifContainer.setPickOnBounds(false);
         notifContainer.setPadding(new Insets(10, 10, 0, 0));
         notifContainer.setMaxSize(350, Region.USE_PREF_SIZE);
@@ -63,8 +63,6 @@ public class SceneManager {
         if (css != null) {
             scene.getStylesheets().add(SceneManager.class.getResource(cssFolder + css).toExternalForm());
         }
-
-        // Replace only index 0 (scene content), preserve notification layer above
         rootWrapper.getChildren().set(0, content);
     }
 

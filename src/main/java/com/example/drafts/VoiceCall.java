@@ -65,7 +65,7 @@ public class VoiceCall {
             mic.start();
 
             byte[] buf     = new byte[PACKET_SIZE];
-            byte[] silence = new byte[PACKET_SIZE]; // all zeros
+            byte[] silence = new byte[PACKET_SIZE];
 
             while (running) {
                 int read = mic.read(buf, 0, buf.length);

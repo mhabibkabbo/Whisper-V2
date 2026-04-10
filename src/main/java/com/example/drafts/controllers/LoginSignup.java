@@ -37,8 +37,6 @@ public class LoginSignup {
     @FXML private AnchorPane container;
     @FXML private ImageView profilePreview;
 
-    // TODO: Make Notification Popup
-
     private File selectedImageFile;
 
     public void initialize() {

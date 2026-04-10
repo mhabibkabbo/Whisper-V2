@@ -12,7 +12,6 @@ public class Session {
         return currentUserId;
     }
 
-    // Group Tracker
     private static int currentGroupId = -1;
 
     public static void setCurrentGroupId(int id) { currentGroupId = id; }
