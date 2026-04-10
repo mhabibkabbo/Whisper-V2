@@ -90,6 +90,10 @@ JAVA_HOME: /path/to/jdk/directory
 Example path: ``C:\Users\<username>\.jdks\ms-21.0.10``
 
 ---
+Make sure that JAVA_HOME variable is set by using the following command :
+```bash
+echo %JAVA_HOME%
+```
 
 ### Step 4: Build the Application
 
@@ -103,15 +107,16 @@ Run these commands sequentially where **build.gradle** file is located:
 .\gradlew jpackage
 ```
 ---
-
-### Step 5: Run the Application
+### Step 5: Install WixToolSet
+- Install **wix314.exe** provided in the main folder. 
+### Step 6: Run the Application
 
 - Start the **SERVER**:\
 Run **Server.java** from **Server/src**
 - Start the **CLIENT**:\
-Go to **build/jpackage/App** and **run Whisper.jar**
+Go to **build/jpackage/Whisper/App** and run **Whisper.jar** or **Whisper.exe**. 
 
-IMPORTANT: Start the server before running the client.
+IMPORTANT: Start the server before running the client. Also do not use the installer provided in the **build/jpackage** folder.
 
 ---
 
